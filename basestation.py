@@ -31,10 +31,10 @@ class Basestation(gym.Env):
         traffic_types: np.array,
         traffic_throughputs: np.array,
         slice_requirements_traffics: dict,
-        max_packets_buffer: int = 1024,
+        max_packets_buffer: int = 1024 * 64, # Original: 1024, changed to be the same size it was before
         buffer_max_lat: int = 100,
         bandwidth: int = 100000000,
-        packet_size: int = 8192 * 8,
+        packet_size: int = 128 * 8, # Original: 8192 * 8
         number_ues: int = 10,
         frequency: int = 2,
         total_number_rbs: int = 17,
@@ -42,13 +42,13 @@ class Basestation(gym.Env):
         max_number_trials: int = 50,
         windows_size_obs: int = 100,
         steps_update_traffics: int = 200,
-        obs_space_mode: str = "full",
+        obs_space_mode: str = "partial",
         rng: BitGenerator = np.random.default_rng(),
         plots: bool = False,
         slice_plots: bool = False,
         ue_plots: bool = False,
         save_hist: bool = False,
-        normalize_ue_obs: bool = False,
+        normalize_ue_obs: bool = False, # DESATIVAR PARA OBTER ENV PARA O MODELO
         baseline: bool = False,
         root_path: str = ".",
         agent_type: str = "main",
@@ -130,9 +130,10 @@ class Basestation(gym.Env):
                 )
             )
 
-        self.hist_labels = [
+        self.hist_labels = [ # 
             "actions",
             "rewards",
+            "" # ------------------------ Colocar obs space
         ]
         self.hist = {
             hist_label: np.array([]) if hist_label != "actions" else np.empty((0, 3))
@@ -179,7 +180,7 @@ class Basestation(gym.Env):
                 self.slices[i].save_hist()
 
         reward = self.calculate_reward()
-        self.update_hist(action_values, reward)
+        self.update_hist(action_values, reward) # Adicionar o espaço de observação que salva o retorno do get_observational_space
         if (self.step_number == self.max_number_steps - 1) and self.save_hist_bool:
             self.save_hist()
         self.step_number += 1
@@ -292,7 +293,7 @@ class Basestation(gym.Env):
                     slice_requirements,
                     (
                         self.slice_requirements[slice_req][attribute]
-                        / self.slice_req_norm_factors[normalization_idx]
+                        / self.slice_req_norm_factors[normalization_idx] # Utilizar espaço sem normalização
                     ),
                 )
                 normalization_idx += 1
@@ -537,12 +538,13 @@ class Basestation(gym.Env):
                 combinations.append(comb)
         return np.asarray(combinations)
 
-    def update_hist(self, action_rbs, reward):
+    def update_hist(self, action_rbs, reward): # cria vetor para salvar histórico
         """
         Update the hist values concerned to the basestation.
         """
         self.hist["actions"] = np.vstack((self.hist["actions"], action_rbs))
         self.hist["rewards"] = np.append(self.hist["rewards"], reward, axis=None)
+        # adicionar self.hist["obs"] ou outro nome
 
     def save_hist(self) -> None:
         """

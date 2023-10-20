@@ -59,9 +59,10 @@ slice_requirements_traffics = {
     },
 }
 
-models = ["intentless", "colran", "sac"]
-obs_space_modes = ["full", "partial"]
-windows_sizes = [1]  # , 50, 100]
+#models = ["intentless", "colran", "sac"]
+models = ["sac"]
+obs_space_modes = ["partial"]
+windows_sizes = [1]  # , 50, 100] # Janela para calcular média móvel do espaço observacional
 seed = 100
 model_save_freq = int(
     train_param["total_trials"]
@@ -141,7 +142,7 @@ def create_agent(
             )
     elif mode == "test":
         path = (
-            "./agents/best_{}_{}_ws{}/best_model".format(
+            "./agents/best_{}_{}_ws{}/best_model".format( # Carrega agente
                 type, obs_space_mode, windows_size_obs
             )
             if test_model == "best"
@@ -179,12 +180,14 @@ def create_agent(
             return BaselineAgent("rr")
 
 
+
 # Removing VecNormalize models from previous simulations
 dir_vec_models = "./vecnormalize_models"
 if not os.path.exists(dir_vec_models):
     os.makedirs(dir_vec_models)
 for f in os.listdir(dir_vec_models):
     os.remove(os.path.join(dir_vec_models, f))
+
 
 # Training
 print("\n############### Training ###############")
@@ -258,6 +261,11 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                 "./agents/{}_{}_ws{}".format(model, obs_space_mode, windows_size_obs)
             )
 
+
+# Carregar agente
+# Utilizar alguma função do stable baselines
+# Na função create_agent utilizar o best para carregar arquivo após treinamento
+
 # Test
 print("\n############### Testing ###############")
 models_test = np.append(models, ["mt", "rr", "pf"])
@@ -289,11 +297,11 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                 dir_vec_file = dir_vec_models + "/{}_{}_ws{}.pkl".format(
                     model, obs_space_mode, windows_size_obs
                 )
-                env = Monitor(env)
+                env = Monitor(env) # Wrapper do stable baselines
                 dict_reset = {"initial_trial": test_param["initial_trial"]}
                 obs = [env.reset(**dict_reset)]
                 env = DummyVecEnv([lambda: env])
-                env = VecNormalize.load(dir_vec_file, env)
+                env = VecNormalize.load(dir_vec_file, env) # env está normalizado
                 env.training = False
                 env.norm_reward = False
             elif not (model in models):
@@ -312,11 +320,14 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                     leave=False,
                     desc="Steps",
                 ):
+                    # INSERT OPTIMAL CALCULATION HERE
                     action, _states = (
                         agent.predict(obs, deterministic=True)
                         if model in models
                         else agent.predict(obs)
                     )
+
+                    # Use "action" var as a vector of RRB allocation
                     obs, rewards, dones, info = env.step(action)
                 if model not in models:
                     env.reset()

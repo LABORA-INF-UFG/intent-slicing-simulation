@@ -39,7 +39,7 @@ class BaselineAgent:
         self.vec_throughput_snt = np.empty((0, 3))
 
     def max_throughput(self, obs: np.array) -> int:
-        se = obs[[14, 23, 32]]
+        se = obs[[14, 23, 32]] # Spectral efficiency?
         buffer_occ = obs[[11, 20, 29]]
         total_throughput_avail = np.min(
             [

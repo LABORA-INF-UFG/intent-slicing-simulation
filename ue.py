@@ -22,10 +22,10 @@ class UE:
         trial_number: int,
         traffic_type: str,
         traffic_throughput: float,
-        max_packets_buffer: int = 1024,
+        max_packets_buffer: int = 1024*64, # Original = 1024
         buffer_max_lat: int = 100,
         bandwidth: float = 100000000,
-        packet_size: int = 8192 * 8,
+        packet_size: int = 128 * 8, # Original = 8192 * 8
         frequency: int = 2,
         total_number_rbs: int = 17,
         plots: bool = False,

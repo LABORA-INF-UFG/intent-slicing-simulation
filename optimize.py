@@ -203,7 +203,8 @@ def objective(trial: optuna.Trial) -> float:
 
 if __name__ == "__main__":
     windows_size_obss = [1]  # , 50, 100]
-    obs_space_modes = ["full", "partial"]
+    #obs_space_modes = ["full", "partial"]
+    obs_space_modes = ["partial"]
     for windows_size_obs in windows_size_obss:
         for obs_space_mode in obs_space_modes:
             torch.set_num_threads(1)
@@ -245,3 +246,13 @@ if __name__ == "__main__":
                     obs_space_mode, windows_size_obs
                 ),
             )
+    print("FINISHED!")
+# RUN IN BACKGROUND WITH:
+# pipenv run python optimize.py > optimize_execution.logs 2>&1 &
+# disown <PROCESS_ID>
+# VERIFY IF IT IS FINISHED WITH:
+# tail -f optimize_execution.logs
+# SEE RUNNING PROCESS WITH:
+# htop
+
+# PID: 1336229

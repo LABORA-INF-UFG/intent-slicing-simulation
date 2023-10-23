@@ -26,6 +26,7 @@ sudo apt install \
     xz-utils \
     zlib1g-dev
 ```
+- Install [pyenv](https://github.com/pyenv/pyenv)
 - Install [pipenv](https://github.com/pypa/pipenv) with `pip install pipenv`
 - Install dependencies using pipenv: `pipenv install`
 - To access the virtual environment created, run `pipenv shell`, now all commands which you run will be performed into virtual enviroment created

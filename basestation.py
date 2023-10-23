@@ -612,7 +612,7 @@ class Basestation(gym.Env):
             y_labels = [
                 "Throughput received (Mbps)",
                 "Uplink Throughput (Mbps)",
-                "Throughput capacity (Mbps)",
+                "Throughput Capacity (Mbps)",
                 "Occupancy rate",
                 "Latency [ms]",
                 "Packet loss rate",
@@ -701,11 +701,11 @@ class Basestation(gym.Env):
 
     @staticmethod
     def packets_to_mbps(packet_size, number_packets):
-        return packet_size * number_packets / 1e6
+        return packet_size * number_packets / 1e3
 
     @staticmethod
     def mbps_to_packets(packet_size, mbps):
-        return np.ceil(mbps * 1e6 / packet_size)
+        return np.ceil(mbps * 1e3 / packet_size)
 
 
 def main():
@@ -761,7 +761,7 @@ def main():
     for trial in range(1, trials + 1):
         print("Trial ", trial)
         for step_number in tqdm(range(2000)):
-            _, _, _, _ = basestation.step(basestation.action_space.sample())
+            _, _, _, _, _= basestation.step(basestation.action_space.sample())
             if step_number == basestation.max_number_steps - 1:
                 basestation.reset()
 

@@ -26,36 +26,36 @@ def main():
     BE_USERS = 3 # ORIGINAL = 3
 
     # Sets
-    slices = ["EMBB", "URLLC", "BE"]
+    slices = ["embb", "urllc", "be"]
     users_ids = range(EMBB_USERS + URLLC_USERS + BE_USERS)
 
     # Required metrics for moderate traffic
     mod_req = dict()
-    mod_req["EMBB"] = dict()
-    mod_req["URLLC"] = dict()
-    mod_req["BE"] = dict()
-    mod_req["EMBB"]['r'] = 10 * 10**3 # 10 Megabits/s = 10 Kilobits in this TTI
-    mod_req["EMBB"]['l'] = 20.0 # 20ms = 20 TTIs
-    mod_req["EMBB"]['p'] = 0.2
-    mod_req["URLLC"]['r'] = 1 * 10**3
-    mod_req["URLLC"]['l'] = 1.0
-    mod_req["URLLC"]['p'] = 1.0 * 10.0**(-5)
-    mod_req["BE"]['g'] = 5 * 10**3
-    mod_req["BE"]['f'] = 2 * 10**3
+    mod_req["embb"] = dict()
+    mod_req["urllc"] = dict()
+    mod_req["be"] = dict()
+    mod_req["embb"]['r'] = 10 * 10**3 # 10 Megabits/s = 10 Kilobits in this TTI
+    mod_req["embb"]['l'] = 20.0 # 20ms = 20 TTIs
+    mod_req["embb"]['p'] = 0.2
+    mod_req["urllc"]['r'] = 1 * 10**3
+    mod_req["urllc"]['l'] = 1.0
+    mod_req["urllc"]['p'] = 1.0 * 10.0**(-5)
+    mod_req["be"]['g'] = 5 * 10**3
+    mod_req["be"]['f'] = 2 * 10**3
 
     # Required metrics for heavy traffic
     hvy_req = dict()
-    hvy_req["EMBB"] = dict()
-    hvy_req["URLLC"] = dict()
-    hvy_req["BE"] = dict()
-    hvy_req["EMBB"]['r'] = 20 * 10**3
-    hvy_req["EMBB"]['l'] = 20.0
-    hvy_req["EMBB"]['p'] = 0.2
-    hvy_req["URLLC"]['r'] = 5 * 10**3
-    hvy_req["URLLC"]['l'] = 1.0
-    hvy_req["URLLC"]['p'] = 1.0 * 10.0**(-5)
-    hvy_req["BE"]['g'] = 10 * 10**3
-    hvy_req["BE"]['f'] = 5 * 10**3
+    hvy_req["embb"] = dict()
+    hvy_req["urllc"] = dict()
+    hvy_req["be"] = dict()
+    hvy_req["embb"]['r'] = 20 * 10**3
+    hvy_req["embb"]['l'] = 20.0
+    hvy_req["embb"]['p'] = 0.2
+    hvy_req["urllc"]['r'] = 5 * 10**3
+    hvy_req["urllc"]['l'] = 1.0
+    hvy_req["urllc"]['p'] = 1.0 * 10.0**(-5)
+    hvy_req["be"]['g'] = 10 * 10**3
+    hvy_req["be"]['f'] = 5 * 10**3
     
     # Selecting the requirements for the right traffic pattern
     if use_heavy_traffic:
@@ -68,31 +68,31 @@ def main():
 
     # Creating the eMBB slice
     eMBB = SliceData(
-        id="EMBB",
+        id="embb",
         b_max=B_MAX*EMBB_USERS,
         l_max=L_MAX,
-        r_req=requirements["EMBB"]['r'],
-        l_req=requirements["EMBB"]['l'],
-        p_req=requirements["EMBB"]['p']
+        r_req=requirements["embb"]['r'],
+        l_req=requirements["embb"]['l'],
+        p_req=requirements["embb"]['p']
     )
     
     # Creating the URLLC slice
     URLLC = SliceData(
-        id="URLLC",
+        id="urllc",
         b_max=B_MAX*URLLC_USERS,
         l_max=L_MAX,
-        r_req=requirements["URLLC"]['r'],
-        l_req=requirements["URLLC"]['l'],
-        p_req=requirements["URLLC"]['p']
+        r_req=requirements["urllc"]['r'],
+        l_req=requirements["urllc"]['l'],
+        p_req=requirements["urllc"]['p']
     )
     
     # Creating the BE slice
     BE = SliceData(
-        id="BE",
+        id="be",
         b_max=B_MAX*BE_USERS,
         l_max=L_MAX,
-        g_req=requirements["BE"]['g'],
-        f_req=requirements["BE"]['f']
+        g_req=requirements["be"]['g'],
+        f_req=requirements["be"]['f']
     )
 
     # Standard spectralm efficiency for each user
@@ -100,23 +100,23 @@ def main():
 
     # Adding EMBB users
     for i in range (EMBB_USERS): 
-        u = UserData(id = i, s = "EMBB", SE = SE)
+        u = UserData(id = i, s = "embb", SE = SE)
         eMBB.addUser(u)
     
     # Adding URLLC users
     for i in range (URLLC_USERS): 
-        u = UserData(id = i+EMBB_USERS, s = "URLLC", SE = SE)
+        u = UserData(id = i+EMBB_USERS, s = "urllc", SE = SE)
         URLLC.addUser(u)
     
     # Adding BE users
     for i in range (BE_USERS): 
-        u = UserData(id = i+EMBB_USERS+URLLC_USERS, s = "BE", SE = SE)
+        u = UserData(id = i+EMBB_USERS+URLLC_USERS, s = "be", SE = SE)
         BE.addUser(u)
 
     # Adding arriving packets to all slices
     # Each user requests 2 Mb/s = 2kb/TTI 
-    eMBB.addArrivingPackets(int(requirements["EMBB"]['r']/PS) * EMBB_USERS)
-    URLLC.addArrivingPackets(int(requirements["URLLC"]['r']/PS) * URLLC_USERS)
+    eMBB.addArrivingPackets(int(requirements["embb"]['r']/PS) * EMBB_USERS)
+    URLLC.addArrivingPackets(int(requirements["urllc"]['r']/PS) * URLLC_USERS)
     # BE doesn't have buffer metrics
 
     # Formatting the model input data as an object

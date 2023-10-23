@@ -13,13 +13,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     # ----
 
     # SET: S
-    m.S = pyo.Set(initialize = ["EMBB", "URLLC", "BE"])
+    m.S = pyo.Set(initialize = ["embb", "urllc", "be"])
 
     # SET: S_rlp
-    m.S_rlp = pyo.Set(initialize = ["EMBB", "URLLC"])
+    m.S_rlp = pyo.Set(initialize = ["embb", "urllc"])
     
     # SET: S_fg
-    m.S_fg = pyo.Set(initialize = ["BE"])
+    m.S_fg = pyo.Set(initialize = ["be"])
 
     # SET: U
     all_users = []
@@ -40,13 +40,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     m.U_fg = pyo.Set(initialize = fg_users)
 
     # SETS: U_{s}
-    m.U_EMBB = pyo.Set(initialize = data.slices["EMBB"].users.keys())
-    m.U_URLLC = pyo.Set(initialize = data.slices["URLLC"].users.keys())
-    m.U_BE = pyo.Set(initialize = data.slices["BE"].users.keys())
+    m.U_EMBB = pyo.Set(initialize = data.slices["embb"].users.keys())
+    m.U_URLLC = pyo.Set(initialize = data.slices["urllc"].users.keys())
+    m.U_BE = pyo.Set(initialize = data.slices["be"].users.keys())
     U_s = dict()
-    U_s["EMBB"] = m.U_EMBB
-    U_s["URLLC"] = m.U_URLLC
-    U_s["BE"] = m.U_BE
+    U_s["embb"] = m.U_EMBB
+    U_s["urllc"] = m.U_URLLC
+    U_s["be"] = m.U_BE
 
     # SET: i = 0, ..., l_{max}
     m.I = pyo.Set(initialize = range(data.l_max + 1))

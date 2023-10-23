@@ -73,38 +73,49 @@ class UE:
         }
         self.number_pkt_loss = np.array([])
         self.rng = rng
+        self.partial_rec_pkts = 0
+        self.partial_sent_pkts = 0
+
 
     def define_traffic_function(self):
         """
         Return a function to calculate the number of packets received to queue
         in the buffer structure. It varies in according to the slice traffic behavior.
+        If the buffer receives only part of a packet in this step, we save it in 
+        self.partial_rec_pkts for the next step.
         """
 
         def traffic_embb():
-            return np.floor(
-                np.abs(
-                    self.rng.poisson((self.traffic_throughput * 1e6) / self.packet_size)
-                )
+            pkts = self.partial_rec_pkts + np.abs(
+                self.rng.poisson(
+                    (self.traffic_throughput * 1e3) / self.packet_size
+                    )
             )
+            whole_pkts = np.floor(pkts)
+            self.partial_rec_pkts = pkts - whole_pkts
+            return whole_pkts
 
         def traffic_urllc():
-            return np.floor(
-                np.abs(
-                    self.rng.poisson((self.traffic_throughput * 1e6) / self.packet_size)
-                )
+            pkts = self.partial_rec_pkts + np.abs(
+                self.rng.poisson(
+                    (self.traffic_throughput * 1e3) / self.packet_size
+                    )
             )
+            whole_pkts = np.floor(pkts)
+            self.partial_rec_pkts = pkts - whole_pkts
+            return whole_pkts
 
         def traffic_be():
-            if self.traffic_throughput != -1:
-                return np.floor(
-                    np.abs(
-                        self.rng.poisson(
-                            (self.traffic_throughput * 1e6) / self.packet_size
-                        )
-                    )
-                )
-            else:
+            if self.traffic_throughput == -1:
                 return 0
+            pkts = self.partial_rec_pkts + np.abs(
+                self.rng.poisson(
+                    (self.traffic_throughput * 1e3) / self.packet_size
+                    )
+            )
+            whole_pkts = np.floor(pkts)
+            self.partial_rec_pkts = pkts - whole_pkts
+            return whole_pkts
 
         if self.traffic_type == "embb":
             return traffic_embb
@@ -119,6 +130,20 @@ class UE:
                 )
             )
 
+    def get_real_pkt_throughput(self, step_number: int, number_rbs_allocated: int) -> float:
+        """
+        Calculate the throughput available to be sent by the UE given the number
+        of RBs allocated, bandwidth and the spectral efficiency. It is not the
+        real throughput since the UE may have less packets in the buffer than
+        the number of packets available to send. It returns a real number
+        of how many packets (including partial ones) can be sent. 
+        """
+        return self.partial_sent_pkts + (
+                (number_rbs_allocated / self.total_number_rbs)
+                * self.bandwidth
+                * self.se[step_number]/1e3 # Because SE is in seconds and we want for ms
+            )/ self.packet_size
+
     def get_pkt_throughput(
         self, step_number: int, number_rbs_allocated: int
     ) -> np.array:
@@ -126,16 +151,18 @@ class UE:
         Calculate the throughput available to be sent by the UE given the number
         of RBs allocated, bandwidth and the spectral efficiency. It is not the
         real throughput since the UE may have less packets in the buffer than
-        the number of packets available to send.
+        the number of packets available to send. If part of a packet is sent
+        in this step, we save it in self.partial_sent_pkts for the next step.
+        This function returns the integer number of packets that can be sent
+        in this step.
         """
-        return np.floor(
-            (
-                (number_rbs_allocated / self.total_number_rbs)
-                * self.bandwidth
-                * self.se[step_number]
-            )
-            / self.packet_size
-        )
+        pkts = self.get_real_pkt_throughput(step_number, number_rbs_allocated)
+        whole_pkts = np.floor(pkts)
+        if (self.buffer.get_buffer_n_pkts() > whole_pkts):
+            self.partial_sent_pkts = pkts - whole_pkts
+        else:
+            self.partial_sent_pkts = 0
+        return whole_pkts
 
     def update_hist(
         self,
@@ -319,7 +346,7 @@ class UE:
 
     @staticmethod
     def packets_to_mbps(packet_size, number_packets):
-        return packet_size * number_packets / 1e6
+        return packet_size * number_packets / 1e3
 
     def step(self, step_number: int, number_rbs_allocated: int) -> None:
         """
@@ -329,12 +356,13 @@ class UE:
         """
         pkt_throughput = self.get_pkt_throughput(step_number, number_rbs_allocated)
         pkt_received = self.get_arrived_packets()
+        #print("Rec =",pkt_received,"Sent =", pkt_throughput)
         self.buffer.receive_packets(pkt_received)
         self.buffer.send_packets(pkt_throughput)
         self.update_hist(
             pkt_received,
             self.buffer.sent_packets,
-            pkt_throughput,
+            self.get_real_pkt_throughput(step_number, number_rbs_allocated),
             self.buffer.get_buffer_occupancy(),
             self.buffer.get_avg_delay(),
             self.buffer.dropped_packets,
@@ -349,11 +377,15 @@ def main():
         id=1,
         trial_number=1,
         traffic_type="embb",
-        traffic_throughput=50,
-        plots=False,
+        traffic_throughput=20,
+        plots=True,
+        total_number_rbs=17,
+        bandwidth = 100000000
     )
+
     for i in range(2000):
-        ue.step(i, 2)
+        #print("SE =",ue.se[i])
+        ue.step(i, 5)
     ue.save_hist()
 
 

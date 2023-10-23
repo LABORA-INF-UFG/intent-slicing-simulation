@@ -4,6 +4,28 @@ Code containing RRM simulation using RL in a scenario with RAN slicing.
 
 ## Install
 
+- Install packages needed for Pipenv:
+```bash
+sudo apt update
+sudo apt install \
+    build-essential \
+    curl \
+    libbz2-dev \
+    libffi-dev \
+    liblzma-dev \
+    libncursesw5-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libssl-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    llvm \
+    make \
+    tk-dev \
+    wget \
+    xz-utils \
+    zlib1g-dev
+```
 - Install [pipenv](https://github.com/pypa/pipenv) with `pip install pipenv`
 - Install dependencies using pipenv: `pipenv install`
 - To access the virtual environment created, run `pipenv shell`, now all commands which you run will be performed into virtual enviroment created

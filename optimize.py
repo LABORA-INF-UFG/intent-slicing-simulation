@@ -163,7 +163,7 @@ def objective(trial: optuna.Trial) -> float:
         slice_requirements_traffics=slice_requirements_traffics,
         windows_size_obs=windows_size_obs,
         obs_space_mode=obs_space_mode,
-        root_path="../intent-slice-simulation",
+        root_path="../intent-slicing-simulation",
         rng=rng,
     )
     env = Monitor(env)

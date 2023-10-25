@@ -1,0 +1,376 @@
+[I 2023-10-23 23:44:00,030] A new study created in memory with name: sac_partial_ws1
+/home/dante/intent-slicing-simulation/optimize.py:39: FutureWarning: suggest_loguniform has been deprecated in v3.0.0. This feature will be removed in v6.0.0. See https://github.com/optuna/optuna/releases/tag/v3.0.0. Use suggest_float(..., log=True) instead.
+  learning_rate = trial.suggest_loguniform("learning_rate", 1e-5, 1)
+Expected parameter loc (Tensor of shape (128, 3)) of distribution Normal(loc: torch.Size([128, 3]), scale: torch.Size([128, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan]], device='cuda:0', grad_fn=<AddmmBackward0>)
+[W 2023-10-23 23:44:28,869] Trial 0 failed with parameters: {'gamma': 0.9, 'learning_rate': 0.06348243270946392, 'batch_size': 128, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 256, 'tau': 0.001, 'net_arch': 'medium'} because of the following error: The value nan is not acceptable.
+[W 2023-10-23 23:44:28,869] Trial 0 failed with value nan.
+/home/dante/intent-slicing-simulation/optimize.py:39: FutureWarning: suggest_loguniform has been deprecated in v3.0.0. This feature will be removed in v6.0.0. See https://github.com/optuna/optuna/releases/tag/v3.0.0. Use suggest_float(..., log=True) instead.
+  learning_rate = trial.suggest_loguniform("learning_rate", 1e-5, 1)
+[I 2023-10-24 00:31:54,796] Trial 1 finished with value: -264.3175614 and parameters: {'gamma': 0.9999, 'learning_rate': 0.0004241878151176135, 'batch_size': 2048, 'buffer_size': 100000, 'learning_starts': 1000, 'train_freq': 64, 'tau': 0.02, 'net_arch': 'medium'}. Best is trial 1 with value: -264.3175614.
+[I 2023-10-24 01:19:02,426] Trial 2 finished with value: -92.3207296 and parameters: {'gamma': 0.9, 'learning_rate': 0.006722566383273697, 'batch_size': 128, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 1, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 02:03:26,001] Trial 3 finished with value: -115.72135619999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.0001750098687143013, 'batch_size': 256, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 256, 'tau': 0.001, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+Expected parameter loc (Tensor of shape (32, 3)) of distribution Normal(loc: torch.Size([32, 3]), scale: torch.Size([32, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan]], device='cuda:0', grad_fn=<AddmmBackward0>)
+[W 2023-10-24 02:03:40,930] Trial 4 failed with parameters: {'gamma': 0.995, 'learning_rate': 0.17480180364590592, 'batch_size': 32, 'buffer_size': 100000, 'learning_starts': 1000, 'train_freq': 32, 'tau': 0.05, 'net_arch': 'medium'} because of the following error: The value nan is not acceptable.
+[W 2023-10-24 02:03:40,930] Trial 4 failed with value nan.
+Expected parameter loc (Tensor of shape (32, 3)) of distribution Normal(loc: torch.Size([32, 3]), scale: torch.Size([32, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan]], device='cuda:0', grad_fn=<AddmmBackward0>)
+[W 2023-10-24 02:08:08,939] Trial 5 failed with parameters: {'gamma': 0.9999, 'learning_rate': 0.6756647430497023, 'batch_size': 32, 'buffer_size': 10000, 'learning_starts': 20000, 'train_freq': 32, 'tau': 0.01, 'net_arch': 'big'} because of the following error: The value nan is not acceptable.
+[W 2023-10-24 02:08:08,939] Trial 5 failed with value nan.
+[I 2023-10-24 02:51:19,724] Trial 6 finished with value: -145.59667 and parameters: {'gamma': 0.98, 'learning_rate': 0.01373438646195786, 'batch_size': 256, 'buffer_size': 100000, 'learning_starts': 10000, 'train_freq': 4, 'tau': 0.08, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+Expected parameter loc (Tensor of shape (16, 3)) of distribution Normal(loc: torch.Size([16, 3]), scale: torch.Size([16, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan]], device='cuda:0', grad_fn=<AddmmBackward0>)
+[W 2023-10-24 02:55:53,012] Trial 7 failed with parameters: {'gamma': 0.995, 'learning_rate': 0.2467918946544679, 'batch_size': 16, 'buffer_size': 100000, 'learning_starts': 20000, 'train_freq': 64, 'tau': 0.005, 'net_arch': 'big'} because of the following error: The value nan is not acceptable.
+[W 2023-10-24 02:55:53,012] Trial 7 failed with value nan.
+[I 2023-10-24 03:40:48,517] Trial 8 finished with value: -145.596731 and parameters: {'gamma': 0.999, 'learning_rate': 0.1559139862449706, 'batch_size': 2048, 'buffer_size': 100000, 'learning_starts': 10000, 'train_freq': 256, 'tau': 0.01, 'net_arch': 'small'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 03:50:19,600] Trial 9 pruned. 
+Expected parameter loc (Tensor of shape (1, 3)) of distribution Normal(loc: torch.Size([1, 3]), scale: torch.Size([1, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan]], device='cuda:0')
+[W 2023-10-24 03:50:21,633] Trial 10 failed with parameters: {'gamma': 0.995, 'learning_rate': 0.6909122902315042, 'batch_size': 128, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 1, 'tau': 0.05, 'net_arch': 'medium'} because of the following error: The value nan is not acceptable.
+[W 2023-10-24 03:50:21,633] Trial 10 failed with value nan.
+[I 2023-10-24 03:54:51,232] Trial 11 pruned. 
+[I 2023-10-24 04:40:31,223] Trial 12 finished with value: -122.58830900000001 and parameters: {'gamma': 0.95, 'learning_rate': 0.016932283964941786, 'batch_size': 1024, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 128, 'tau': 0.005, 'net_arch': 'small'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 05:25:01,740] Trial 13 finished with value: -285.1825184 and parameters: {'gamma': 0.99, 'learning_rate': 0.003288194125282094, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 0, 'train_freq': 512, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 05:29:32,813] Trial 14 pruned. 
+[I 2023-10-24 05:38:18,958] Trial 15 pruned. 
+[I 2023-10-24 06:22:56,595] Trial 16 finished with value: -110.72005180000001 and parameters: {'gamma': 0.9, 'learning_rate': 0.0002188418427067953, 'batch_size': 256, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 256, 'tau': 0.001, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 06:31:30,872] Trial 17 pruned. 
+[I 2023-10-24 07:18:32,509] Trial 18 finished with value: -93.7850942 and parameters: {'gamma': 0.9, 'learning_rate': 0.0016199713536805644, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 1, 'tau': 0.01, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 07:27:58,679] Trial 19 pruned. 
+[I 2023-10-24 07:37:13,644] Trial 20 pruned. 
+[I 2023-10-24 07:44:16,375] Trial 21 pruned. 
+[I 2023-10-24 07:48:43,752] Trial 22 pruned. 
+Expected parameter loc (Tensor of shape (1, 3)) of distribution Normal(loc: torch.Size([1, 3]), scale: torch.Size([1, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan]], device='cuda:0')
+[W 2023-10-24 07:49:18,357] Trial 23 failed with parameters: {'gamma': 0.995, 'learning_rate': 0.053673755367522405, 'batch_size': 16, 'buffer_size': 1000000, 'learning_starts': 1000, 'train_freq': 8, 'tau': 0.01, 'net_arch': 'big'} because of the following error: The value nan is not acceptable.
+[W 2023-10-24 07:49:18,358] Trial 23 failed with value nan.
+Expected parameter loc (Tensor of shape (32, 3)) of distribution Normal(loc: torch.Size([32, 3]), scale: torch.Size([32, 3])) to satisfy the constraint Real(), but found invalid values:
+tensor([[nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan],
+        [nan, nan, nan]], device='cuda:0', grad_fn=<AddmmBackward0>)
+[W 2023-10-24 07:49:41,690] Trial 24 failed with parameters: {'gamma': 0.995, 'learning_rate': 0.07929233016101628, 'batch_size': 32, 'buffer_size': 1000000, 'learning_starts': 1000, 'train_freq': 128, 'tau': 0.05, 'net_arch': 'big'} because of the following error: The value nan is not acceptable.
+[W 2023-10-24 07:49:41,690] Trial 24 failed with value nan.
+[I 2023-10-24 07:58:29,630] Trial 25 pruned. 
+[I 2023-10-24 08:16:31,389] Trial 26 pruned. 
+[I 2023-10-24 08:33:59,175] Trial 27 pruned. 
+[I 2023-10-24 09:18:37,528] Trial 28 finished with value: -117.46597320000001 and parameters: {'gamma': 0.9, 'learning_rate': 0.0005279788924594516, 'batch_size': 256, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 256, 'tau': 0.001, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 10:08:15,312] Trial 29 finished with value: -116.92020419999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.0027908063645586106, 'batch_size': 512, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 16, 'tau': 0.05, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 10:17:36,322] Trial 30 pruned. 
+[I 2023-10-24 11:05:40,695] Trial 31 finished with value: -104.721585 and parameters: {'gamma': 0.9, 'learning_rate': 0.0006083897778992922, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 4, 'tau': 0.005, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 11:24:14,853] Trial 32 pruned. 
+[I 2023-10-24 11:31:39,397] Trial 33 pruned. 
+[I 2023-10-24 11:36:29,140] Trial 34 pruned. 
+[I 2023-10-24 11:46:25,800] Trial 35 pruned. 
+[I 2023-10-24 11:56:02,820] Trial 36 pruned. 
+[I 2023-10-24 12:06:02,908] Trial 37 pruned. 
+[I 2023-10-24 12:15:25,226] Trial 38 pruned. 
+[I 2023-10-24 13:01:00,299] Trial 39 finished with value: -107.91847560000001 and parameters: {'gamma': 0.9, 'learning_rate': 0.0002899747981875368, 'batch_size': 256, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 256, 'tau': 0.001, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 13:47:21,852] Trial 40 finished with value: -104.92811160000001 and parameters: {'gamma': 0.9, 'learning_rate': 0.0003463316423267641, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 4, 'tau': 0.01, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 14:34:13,228] Trial 41 finished with value: -99.66414379999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.0004600820080656005, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 4, 'tau': 0.01, 'net_arch': 'big'}. Best is trial 2 with value: -92.3207296.
+[I 2023-10-24 14:41:35,198] Trial 42 pruned. 
+[I 2023-10-24 14:50:48,757] Trial 43 pruned. 
+[I 2023-10-24 15:00:35,399] Trial 44 pruned. 
+[I 2023-10-24 15:48:16,491] Trial 45 finished with value: -83.9837218 and parameters: {'gamma': 0.9, 'learning_rate': 0.0006786378117223981, 'batch_size': 32, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 8, 'tau': 0.01, 'net_arch': 'medium'}. Best is trial 45 with value: -83.9837218.
+[I 2023-10-24 15:57:47,011] Trial 46 pruned. 
+[I 2023-10-24 16:07:11,050] Trial 47 pruned. 
+[I 2023-10-24 16:25:54,000] Trial 48 pruned. 
+[I 2023-10-24 16:36:21,833] Trial 49 pruned. 
+[I 2023-10-24 16:41:06,348] Trial 50 pruned. 
+[I 2023-10-24 17:30:18,336] Trial 51 finished with value: -83.95148959999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.003917598160757259, 'batch_size': 512, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 512, 'tau': 0.08, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-24 17:40:09,366] Trial 52 pruned. 
+[I 2023-10-24 17:49:43,885] Trial 53 pruned. 
+[I 2023-10-24 18:00:01,049] Trial 54 pruned. 
+[I 2023-10-24 18:19:07,948] Trial 55 pruned. 
+[I 2023-10-24 18:26:27,131] Trial 56 pruned. 
+[I 2023-10-24 18:35:57,495] Trial 57 pruned. 
+[I 2023-10-24 18:54:23,624] Trial 58 pruned. 
+[I 2023-10-24 19:04:37,248] Trial 59 pruned. 
+[I 2023-10-24 19:09:18,099] Trial 60 pruned. 
+[I 2023-10-24 19:27:41,027] Trial 61 pruned. 
+[I 2023-10-24 20:16:50,520] Trial 62 finished with value: -115.99230700000001 and parameters: {'gamma': 0.9, 'learning_rate': 0.003383625109847578, 'batch_size': 1024, 'buffer_size': 10000, 'learning_starts': 0, 'train_freq': 4, 'tau': 0.01, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-24 20:26:12,853] Trial 63 pruned. 
+[I 2023-10-24 20:33:54,903] Trial 64 pruned. 
+[I 2023-10-24 20:43:49,121] Trial 65 pruned. 
+[I 2023-10-24 20:53:03,133] Trial 66 pruned. 
+[I 2023-10-24 21:02:26,841] Trial 67 pruned. 
+[I 2023-10-24 21:21:01,511] Trial 68 pruned. 
+[I 2023-10-24 21:30:16,011] Trial 69 pruned. 
+[I 2023-10-24 22:18:40,329] Trial 70 finished with value: -105.72304799999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.000634016322172919, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 4, 'tau': 0.01, 'net_arch': 'big'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-24 22:28:37,099] Trial 71 pruned. 
+[I 2023-10-24 22:33:21,560] Trial 72 pruned. 
+[I 2023-10-24 22:42:53,781] Trial 73 pruned. 
+[I 2023-10-24 22:52:41,383] Trial 74 pruned. 
+[I 2023-10-24 23:01:58,700] Trial 75 pruned. 
+[I 2023-10-24 23:11:53,740] Trial 76 pruned. 
+[I 2023-10-24 23:22:44,608] Trial 77 pruned. 
+[I 2023-10-25 00:09:21,963] Trial 78 finished with value: -94.188124 and parameters: {'gamma': 0.9, 'learning_rate': 0.0007750125318908291, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 4, 'tau': 0.01, 'net_arch': 'big'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 00:18:08,653] Trial 79 pruned. 
+[I 2023-10-25 01:03:08,749] Trial 80 finished with value: -105.76199360000001 and parameters: {'gamma': 0.9, 'learning_rate': 0.0003376290382507846, 'batch_size': 128, 'buffer_size': 10000, 'learning_starts': 1000, 'train_freq': 4, 'tau': 0.01, 'net_arch': 'big'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 01:20:57,411] Trial 81 pruned. 
+[I 2023-10-25 01:29:34,804] Trial 82 pruned. 
+[I 2023-10-25 01:36:35,027] Trial 83 pruned. 
+[I 2023-10-25 01:54:56,429] Trial 84 pruned. 
+[I 2023-10-25 02:03:36,194] Trial 85 pruned. 
+[I 2023-10-25 02:12:22,957] Trial 86 pruned. 
+[I 2023-10-25 02:59:41,702] Trial 87 finished with value: -94.1401002 and parameters: {'gamma': 0.9, 'learning_rate': 0.0003832849658310061, 'batch_size': 16, 'buffer_size': 10000, 'learning_starts': 0, 'train_freq': 1, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 03:09:10,007] Trial 88 pruned. 
+[I 2023-10-25 03:28:06,460] Trial 89 pruned. 
+[I 2023-10-25 04:15:23,632] Trial 90 finished with value: -95.15734379999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.00048204567738039343, 'batch_size': 16, 'buffer_size': 10000, 'learning_starts': 0, 'train_freq': 1, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 04:24:50,643] Trial 91 pruned. 
+[I 2023-10-25 04:43:49,083] Trial 92 pruned. 
+[I 2023-10-25 05:02:52,324] Trial 93 pruned. 
+[I 2023-10-25 05:12:24,039] Trial 94 pruned. 
+[I 2023-10-25 05:56:37,380] Trial 95 finished with value: -87.6236892 and parameters: {'gamma': 0.9, 'learning_rate': 0.0006700202891563054, 'batch_size': 32, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 32, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 06:40:48,078] Trial 96 finished with value: -97.40515479999999 and parameters: {'gamma': 0.9, 'learning_rate': 0.003683877789888245, 'batch_size': 32, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 32, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 07:28:16,378] Trial 97 finished with value: -93.2009796 and parameters: {'gamma': 0.9, 'learning_rate': 0.005095493547904488, 'batch_size': 32, 'buffer_size': 1000000, 'learning_starts': 0, 'train_freq': 1, 'tau': 0.05, 'net_arch': 'medium'}. Best is trial 51 with value: -83.95148959999999.
+[I 2023-10-25 07:37:04,177] Trial 98 pruned. 
+[I 2023-10-25 07:55:47,151] Trial 99 pruned. 
+Number of finished trials:  100
+Best trial:
+  Value:  -83.95148959999999
+  Params: 
+    gamma: 0.9
+    learning_rate: 0.003917598160757259
+    batch_size: 512
+    buffer_size: 1000000
+    learning_starts: 0
+    train_freq: 512
+    tau: 0.08
+    net_arch: medium
+  User attrs:
+FINISHED!
+

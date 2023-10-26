@@ -61,8 +61,8 @@ slice_requirements_traffics = {
 
 #models = ["intentless", "colran", "sac"]
 models = ["sac"]
-obs_space_modes = ["partial"]
-windows_sizes = [1]  # , 50, 100] # Janela para calcular média móvel do espaço observacional
+obs_space_modes = ["partial"] # , "full"]
+windows_sizes = [1]  # , 50, 100] # Window for calculating the moving mean of metrics (not used)
 seed = 100
 model_save_freq = int(
     train_param["total_trials"]

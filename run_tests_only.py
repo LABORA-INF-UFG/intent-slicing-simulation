@@ -182,7 +182,8 @@ def create_agent(
 
 # Test
 print("\n############### Testing ###############")
-models_test = np.append(models, ["mt", "rr", "pf"])
+#models_test = np.append(models, ["mt", "rr", "pf"])
+models_test = models
 for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
     for obs_space_mode in tqdm(obs_space_modes, desc="Obs. Space mode", leave=False):
         for model in tqdm(models_test, desc="Models", leave=False):
@@ -213,13 +214,14 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                 )
                 env = Monitor(env) # Stable baselines wrapper
                 dict_reset = {"initial_trial": test_param["initial_trial"]}
-                obs = [env.reset(**dict_reset)]
+                obs, _ = env.reset(**dict_reset)
+                obs = [obs]
                 env = DummyVecEnv([lambda: env])
                 env = VecNormalize.load(dir_vec_file, env) # env is normalized
                 env.training = False
                 env.norm_reward = False
             elif not (model in models):
-                obs = env.reset(test_param["initial_trial"])
+                obs, _ = env.reset(test_param["initial_trial"])
             agent = create_agent(
                 model, env, "test", obs_space_mode, windows_size_obs, test_model
             )
@@ -240,8 +242,11 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                         if model in models
                         else agent.predict(obs)
                     )
-
                     # Use "action" var as a vector of RRB allocation
-                    obs, rewards, dones, info = env.step(action)
+                    step = env.step(action)
+                    if (len(step) == 4):
+                        obs, rewards, dones, info = step
+                    else:
+                        obs, rewards, dones, _, info = step
                 if model not in models:
                     env.reset()

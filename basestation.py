@@ -226,6 +226,10 @@ class Basestation(gym.Env):
         }
 
         return (self.get_obs_space(), {})
+        #result = [np.array(self.get_obs_space()), [0]]
+        #result = np.array(result)
+        #result = np.concatenate(self.get_obs_space(), np.ndarray([0]))
+        #return result
 
     def render(self, mode="human"):
         pass

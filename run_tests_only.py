@@ -13,14 +13,14 @@ from basestation import Basestation
 from callbacks import ProgressBarManager
 
 train_param = {
-    "steps_per_trial": 200, #2000,
+    "steps_per_trial": 2000, #2000,
     "total_trials": 3, #45,
     "runs_per_agent": 10,
 }
 
 test_param = {
-    "steps_per_trial": 200, #2000,
-    "total_trials": 6, #50,
+    "steps_per_trial": 2000, #2000,
+    "total_trials": 4, #50,
     "initial_trial": 4, #46,
     "runs_per_agent": 1,
 }

@@ -13,15 +13,15 @@ from basestation import Basestation
 from callbacks import ProgressBarManager
 
 train_param = {
-    "steps_per_trial": 2000, #2000,
-    "total_trials": 1, #45,
-    "runs_per_agent": 1, #10,
+    "steps_per_trial": 200, #2000,
+    "total_trials": 3, #45,
+    "runs_per_agent": 10,
 }
 
 test_param = {
-    "steps_per_trial": 2000, #2000,
-    "total_trials": 2, #50,
-    "initial_trial": 2, #46,
+    "steps_per_trial": 200, #2000,
+    "total_trials": 6, #50,
+    "initial_trial": 4, #46,
     "runs_per_agent": 1,
 }
 
@@ -180,92 +180,6 @@ def create_agent(
             return BaselineAgent("rr")
 
 
-
-# Removing VecNormalize models from previous simulations
-dir_vec_models = "./vecnormalize_models"
-if not os.path.exists(dir_vec_models):
-    os.makedirs(dir_vec_models)
-for f in os.listdir(dir_vec_models):
-    os.remove(os.path.join(dir_vec_models, f))
-    
-
-# Training
-print("\n############### Training ###############")
-for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
-    for obs_space_mode in tqdm(obs_space_modes, desc="Obs. Space mode", leave=False):
-        for model in tqdm(models, desc="Models", leave=False):
-            rng = np.random.default_rng(seed) if seed != -1 else np.random.default_rng()
-            env = Basestation(
-                bs_name="train/{}/ws_{}/{}/".format(
-                    model,
-                    windows_size_obs,
-                    obs_space_mode,
-                ),
-                max_number_steps=train_param["steps_per_trial"],
-                max_number_trials=train_param["total_trials"],
-                traffic_types=traffic_types,
-                traffic_throughputs=traffic_throughputs,
-                slice_requirements_traffics=slice_requirements_traffics,
-                windows_size_obs=windows_size_obs,
-                obs_space_mode=obs_space_mode,
-                rng=rng,
-                agent_type="main" if model not in ["intentless", "colran"] else model,
-            )
-            env = Monitor(env)
-            env = DummyVecEnv([lambda: env])
-            dir_vec_file = dir_vec_models + "/{}_{}_ws{}.pkl".format(
-                model, obs_space_mode, windows_size_obs
-            )
-            env = VecNormalize(env)
-            agent = create_agent(model, env, "train", obs_space_mode, windows_size_obs)
-            agent.set_random_seed(seed)
-            callback_checkpoint = CheckpointCallback(
-                save_freq=model_save_freq,
-                save_path="./agents/",
-                name_prefix="{}_{}_ws{}".format(
-                    model, obs_space_mode, windows_size_obs
-                ),
-            )
-            callback_evaluation = EvalCallback(
-                eval_env=env,
-                log_path="./evaluations/",
-                best_model_save_path="./agents/best_{}_{}_ws{}/".format(
-                    model, obs_space_mode, windows_size_obs
-                ),
-                n_eval_episodes=n_eval_episodes,
-                eval_freq=eval_freq,
-                verbose=False,
-                warn=False,
-            )
-            with ProgressBarManager(
-                int(
-                    train_param["total_trials"]
-                    * train_param["steps_per_trial"]
-                    * train_param["runs_per_agent"]
-                )
-            ) as callback_progress_bar:
-                agent.learn(
-                    total_timesteps=int(
-                        train_param["total_trials"]
-                        * train_param["steps_per_trial"]
-                        * train_param["runs_per_agent"]
-                    ),
-                    callback=[
-                        callback_progress_bar,
-                        callback_checkpoint,
-                        callback_evaluation,
-                    ],
-                )
-            env.save(dir_vec_file)
-            agent.save(
-                "./agents/{}_{}_ws{}".format(model, obs_space_mode, windows_size_obs)
-            )
-
-
-# Carregar agente
-# Utilizar alguma função do stable baselines
-# Na função create_agent utilizar o best para carregar arquivo após treinamento
-
 # Test
 print("\n############### Testing ###############")
 models_test = np.append(models, ["mt", "rr", "pf"])
@@ -297,11 +211,11 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                 dir_vec_file = dir_vec_models + "/{}_{}_ws{}.pkl".format(
                     model, obs_space_mode, windows_size_obs
                 )
-                env = Monitor(env)
+                env = Monitor(env) # Stable baselines wrapper
                 dict_reset = {"initial_trial": test_param["initial_trial"]}
                 obs = [env.reset(**dict_reset)]
                 env = DummyVecEnv([lambda: env])
-                env = VecNormalize.load(dir_vec_file, env)
+                env = VecNormalize.load(dir_vec_file, env) # env is normalized
                 env.training = False
                 env.norm_reward = False
             elif not (model in models):

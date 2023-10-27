@@ -5,7 +5,7 @@ evaluations*/
 stable-baselines3/
 
 # VecNormalize models
-vecnormalize_models*/
+#vecnormalize_models*/
 
 # Tensorboard logs
 tensorboard-logs*/
@@ -155,5 +155,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Best model (used in the experiment)
+# Save Best model (used in the experiment)
 !agents/best_sac_partial_ws1/best_model.zip

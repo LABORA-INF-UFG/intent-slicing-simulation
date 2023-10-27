@@ -14,14 +14,14 @@ from callbacks import ProgressBarManager
 
 train_param = {
     "steps_per_trial": 2000, #2000,
-    "total_trials": 1, #45,
-    "runs_per_agent": 1, #10,
+    "total_trials": 45, #45,
+    "runs_per_agent": 10, #10,
 }
 
 test_param = {
     "steps_per_trial": 2000, #2000,
-    "total_trials": 2, #50,
-    "initial_trial": 2, #46,
+    "total_trials": 50, #50,
+    "initial_trial": 46, #46,
     "runs_per_agent": 1,
 }
 
@@ -261,73 +261,4 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                 "./agents/{}_{}_ws{}".format(model, obs_space_mode, windows_size_obs)
             )
 
-
-# Carregar agente
-# Utilizar alguma função do stable baselines
-# Na função create_agent utilizar o best para carregar arquivo após treinamento
-
-# Test
-print("\n############### Testing ###############")
-models_test = np.append(models, ["mt", "rr", "pf"])
-for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
-    for obs_space_mode in tqdm(obs_space_modes, desc="Obs. Space mode", leave=False):
-        for model in tqdm(models_test, desc="Models", leave=False):
-            rng = np.random.default_rng(seed) if seed != -1 else np.random.default_rng()
-            env = Basestation(
-                bs_name="test/{}/ws_{}/{}/".format(
-                    model,
-                    windows_size_obs,
-                    obs_space_mode,
-                ),
-                max_number_steps=test_param["steps_per_trial"],
-                max_number_trials=test_param["total_trials"],
-                traffic_types=traffic_types,
-                traffic_throughputs=traffic_throughputs,
-                slice_requirements_traffics=slice_requirements_traffics,
-                windows_size_obs=windows_size_obs,
-                obs_space_mode=obs_space_mode,
-                rng=rng,
-                plots=True,
-                save_hist=True,
-                baseline=False if model in models else True,
-            )
-
-            if model in models:
-                dir_vec_models = "./vecnormalize_models"
-                dir_vec_file = dir_vec_models + "/{}_{}_ws{}.pkl".format(
-                    model, obs_space_mode, windows_size_obs
-                )
-                env = Monitor(env)
-                dict_reset = {"initial_trial": test_param["initial_trial"]}
-                obs = [env.reset(**dict_reset)]
-                env = DummyVecEnv([lambda: env])
-                env = VecNormalize.load(dir_vec_file, env)
-                env.training = False
-                env.norm_reward = False
-            elif not (model in models):
-                obs = env.reset(test_param["initial_trial"])
-            agent = create_agent(
-                model, env, "test", obs_space_mode, windows_size_obs, test_model
-            )
-            agent.set_random_seed(seed)
-            for _ in tqdm(
-                range(test_param["total_trials"] + 1 - test_param["initial_trial"]),
-                leave=False,
-                desc="Trials",
-            ):
-                for _ in tqdm(
-                    range(test_param["steps_per_trial"]),
-                    leave=False,
-                    desc="Steps",
-                ):
-                    # INSERT OPTIMAL CALCULATION HERE
-                    action, _states = (
-                        agent.predict(obs, deterministic=True)
-                        if model in models
-                        else agent.predict(obs)
-                    )
-
-                    # Use "action" var as a vector of RRB allocation
-                    obs, rewards, dones, info = env.step(action)
-                if model not in models:
-                    env.reset()
+# PID: 546678

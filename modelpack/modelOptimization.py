@@ -68,7 +68,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     m.R_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
 
     # VAR: k_u for all slices
-    m.k_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
+    m.k_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
     
     # VAR: sent_s^i for rlp slices
     m.sent_s_i = pyo.Var(m.S_rlp, m.I, domain=pyo.NonNegativeIntegers)
@@ -319,14 +319,14 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             
     
     # --------------- Constraints for rlp slices
-    m.constr_k_u_floor_upper = pyo.ConstraintList()
-    m.constr_k_u_floor_lower = pyo.ConstraintList()
+    m.constr_k_s_floor_upper = pyo.ConstraintList()
+    m.constr_k_s_floor_lower = pyo.ConstraintList()
     m.constr_r_s_intent = pyo.ConstraintList()
     m.constr_sent_l_max = pyo.ConstraintList()
     m.constr_sent_T_s = pyo.ConstraintList()
-    m.constr_T_s_le_sum_k_u = pyo.ConstraintList()
+    m.constr_T_s_le_k_s = pyo.ConstraintList()
     m.constr_T_s_le_sum_buff_s = pyo.ConstraintList()
-    m.constr_T_s_ge_sum_k_u = pyo.ConstraintList()
+    m.constr_T_s_ge_k_s = pyo.ConstraintList()
     m.constr_T_s_ge_sum_buff_s = pyo.ConstraintList()
     m.constr_sent_le_delta_buff = pyo.ConstraintList()
     m.constr_maxbuff_ge_buff = pyo.ConstraintList()
@@ -334,30 +334,30 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     m.constr_maxbuff_le_buff = pyo.ConstraintList()
     m.constr_maxbuff_le_sent = pyo.ConstraintList()
     m.constr_l_s_intent = pyo.ConstraintList()
-    m.constr_maxover_s_ge_b_s = pyo.ConstraintList()
-    m.constr_maxover_s_ge_b_max = pyo.ConstraintList()
-    m.constr_maxover_s_le_b_s = pyo.ConstraintList()
-    m.constr_maxover_s_le_b_max = pyo.ConstraintList()
+    m.constr_maxover_s_ge_b_s_sup = pyo.ConstraintList()
+    m.constr_maxover_s_ge_b_s_max = pyo.ConstraintList()
+    m.constr_maxover_s_le_b_s_sup = pyo.ConstraintList()
+    m.constr_maxover_s_le_b_s_max = pyo.ConstraintList()
     m.constr_p_s_intent = pyo.ConstraintList()
     for s in m.S_rlp:
-        # CONSTR: k_u flooring upper bound
-        m.constr_k_u_floor_upper.add(
-            m.k_u[u] <= (data.B * m.R_u[u]/data.R * data.slices[s].users[u].SE)/data.PS
-        )
-
-        # CONSTR: k_u flooring lower bound
-        m.constr_k_u_floor_lower.add(
-            m.k_u[u] + 1 >= (data.B * m.R_u[u]/data.R * data.slices[s].users[u].SE)/data.PS + data.e
-        )
-
         # CONSTR: Throughput intent
         m.constr_r_s_intent.add(
             r_s[s] >= data.slices[s].r_req * len(U_s[s])
         )
-        
+
+        # CONSTR: k_s flooring upper bound
+        m.constr_k_s_floor_upper.add(
+            m.k_s[s] <= r_s[s]/data.PS + data.slices[s].hist_part[data.n]
+        )
+
+        # CONSTR: k_s flooring lower bound
+        m.constr_k_s_floor_lower.add(
+            m.k_s[s] + 1 >= r_s[s]/data.PS + data.slices[s].hist_part[data.n] + data.e
+        )
+
         # CONSTR: sent_l_max <= buffer_l_max
         m.constr_sent_l_max.add(
-            m.sent_s_i[s,data.l_max] <= data.slices[s].buffer[data.l_max]
+            m.sent_s_i[s,data.l_max] <= data.slices[s].hist_buff[data.n][data.l_max]
         )
 
         # CONSTR: sum sent_s_i  = T_s
@@ -365,36 +365,36 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             sum(m.sent_s_i[s,i] for i in m.I) == m.T_s[s]
         )
 
-        # CONSTR: T_s <= sum k_u
-        m.constr_T_s_le_sum_k_u.add(
-            m.T_s[s] <= sum(m.k_u[u] for u in U_s[s])
+        # CONSTR: T_s <= k_s
+        m.constr_T_s_le_k_s.add(
+            m.T_s[s] <= m.k_s[s]
         )
 
         # CONSTR: T_s <= sum buff_s
         m.constr_T_s_le_sum_buff_s.add(
-            m.T_s[s] <= sum(data.slices[s].buffer[i] for i in m.I)
+            m.T_s[s] <= sum(data.slices[s].hist_buff[data.n][i] for i in m.I)
         )
 
-        # CONSTR: T_s >= sum k_u
-        m.constr_T_s_ge_sum_k_u.add(
-            m.T_s[s] >= sum(m.k_u[u] for u in U_s[s]) - V_T * (1 - m.alpha_s[s])
+        # CONSTR: T_s >= k_s
+        m.constr_T_s_ge_k_s.add(
+            m.T_s[s] >= m.k_s[s] - V_T * (1 - m.alpha_s[s])
         )
 
         # CONSTR: T_s >= sum buff_s
         m.constr_T_s_ge_sum_buff_s.add(
-            m.T_s[s] >= sum(data.slices[s].buffer[i] for i in m.I) - V_T * m.alpha_s[s]
+            m.T_s[s] >= sum(data.slices[s].hist_buff[data.n][i] for i in m.I) - V_T * m.alpha_s[s]
         )
         
         for i in m.I_0_l_max_1:
             # CONSTR: sent_s_i <= delta_s * buff_s
             m.constr_sent_le_delta_buff.add(
-                m.sent_s_i[s,i] <= m.delta_s_i[s,i+1] * data.slices[s].buffer[i]
+                m.sent_s_i[s,i] <= m.delta_s_i[s,i+1] * data.slices[s].hist_buff[data.n][i]
             )
         
         for i in m.I_1_l_max:
             # CONSTR: maxbuff_s >= buff_s
             m.constr_maxbuff_ge_buff.add(
-                m.MAXbuff_s_i[s,i] >= data.slices[s].buffer[i]
+                m.MAXbuff_s_i[s,i] >= data.slices[s].hist_buff[data.n][i]
             )
             
             # CONSTR: maxbuff_s >= sent_s
@@ -404,7 +404,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             
             # CONSTR: maxbuff_s <= buff_s
             m.constr_maxbuff_ge_buff.add(
-                m.MAXbuff_s_i[s,i] <= data.slices[s].buffer[i] + V_buff * (1 - m.delta_s_i[s,i])
+                m.MAXbuff_s_i[s,i] <= data.slices[s].hist_buff[data.n][i] + V_buff * (1 - m.delta_s_i[s,i])
             )
             
             # CONSTR: maxbuff_s <= sent_s
@@ -414,27 +414,28 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
         
         # CONSTR: Average Buffer Latency intent
         m.constr_l_s_intent.add(
-            sum(remain_s_i[s,i] * i for i in m.I) <= data.slices[s].l_req * sum(remain_s_i[s,i] for i in m.I)
+            sum((data.slices[s].hist_acc[data.n][i] + m.sent_s_i[s,i])*i for i in m.I)
+            <= data.slices[s].l_req * sum((data.slices[s].hist_acc[data.n][i] + m.sent_s_i[s,i]))
         )
         
-        # CONSTR: maxover_s >= b_s
-        m.constr_maxover_s_ge_b_s.add(
-            m.MAXover_s[s] >= b_s[s]
+        # CONSTR: maxover_s >= b_s_sup
+        m.constr_maxover_s_ge_b_s_sup.add(
+            m.MAXover_s[s] >= b_s_sup[s]
         )
 
-        # CONSTR: maxover_s >= b_max
-        m.constr_maxover_s_ge_b_max.add(
-            m.MAXover_s[s] >= data.slices[s].b_max
+        # CONSTR: maxover_s >= b_s_max
+        m.constr_maxover_s_ge_b_s_max.add(
+            m.MAXover_s[s] >= data.slices[s].b_s_max
         )
         
-        # CONSTR: maxover_s <= b_s
-        m.constr_maxover_s_le_b_s.add(
-            m.MAXover_s[s] <= b_s[s] + V_over * (1 - m.beta_s[s])
+        # CONSTR: maxover_s <= b_s_sup
+        m.constr_maxover_s_le_b_s_sup.add(
+            m.MAXover_s[s] <= b_s_sup[s] + V_over * (1 - m.beta_s[s])
         )
         
-        # CONSTR: maxover_s <= b_max
-        m.constr_maxover_s_le_b_max.add(
-            m.MAXover_s[s] <= data.slices[s].b_max + V_over * m.beta_s[s]
+        # CONSTR: maxover_s <= b_s_max
+        m.constr_maxover_s_le_b_s_max.add(
+            m.MAXover_s[s] <= data.slices[s].b_s_max + V_over * m.beta_s[s]
         )
         
         # CONSTR: Packet Loss Rate intent

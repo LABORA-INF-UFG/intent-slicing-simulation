@@ -139,7 +139,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     # --------------- Expressions for rlp slices
     
     remain_s_i = dict()
-    b_s = dict()
+    b_s_sup = dict()
     over_s = dict()
     d_s_sup = dict()
     p_s = dict()
@@ -149,7 +149,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             remain_s_i[s,i] = data.slices[s].hist_buff[data.n][i] - m.sent_s_i[s,i]
     
         # EXP: b_s_sup for rlp slices
-        b_s[s] = data.slices[s].hist_rcv[data.n] + sum(remain_s_i[s,i] for i in m.I)
+        b_s_sup[s] = data.slices[s].hist_rcv[data.n] + sum(remain_s_i[s,i] for i in m.I)
     
         # EXP: over_s for rlp slices
         over_s[s] = m.MAXover_s[s] - data.slices[s].b_s_max
@@ -168,10 +168,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     g_s = dict()
     for s in m.S_fg:
         # EXP: g_u calculation 
-        if data.n > 0:
-            g_s[s] = (r_s[s] + sum(data.slices[s].hist_r[i] for i in range (data.n-data.w, data.n)))/data.w
-        else:
-            g_s[s] = r_s[s]
+        g_s[s] = (sum(data.slices[s].hist_r[data.n-data.w+1 : data.n]) + r_s[s])/data.w
 
     # ------------------
     # OBJECTIVE FUNCTION

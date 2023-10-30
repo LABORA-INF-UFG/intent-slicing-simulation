@@ -189,13 +189,12 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     else:
         m.constr_R_s_sum = pyo.Constraint(expr=sum(m.R_s[s] for s in m.S) <= data.R)
 
-    # --------------- Constraints for each slice
+    # --------------- Constraints for all slices
     
     m.constr_R_u_sum = pyo.ConstraintList()
     m.constr_R_u_1 = pyo.ConstraintList()
     m.constr_R_u_2 = pyo.ConstraintList()
-    m.constr_k_u_floor_upper = pyo.ConstraintList()
-    m.constr_k_u_floor_lower = pyo.ConstraintList()
+    
     for s in m.S:
         # CONSTR: sum R_u = R_s
         m.constr_R_u_sum.add(
@@ -211,16 +210,6 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             # CONSTR: R_u intra slice modeling 2
             m.constr_R_u_2.add(
                 m.R_s[s]/len(U_s[s]) - m.R_u[u] <= 1 - data.e
-            )
-
-            # CONSTR: k_u flooring upper bound
-            m.constr_k_u_floor_upper.add(
-                m.k_u[u] <= (data.B * m.R_u[u]/data.R * data.slices[s].users[u].SE)/data.PS
-            )
-
-            # CONSTR: k_u flooring lower bound
-            m.constr_k_u_floor_lower.add(
-                m.k_u[u] + 1 >= (data.B * m.R_u[u]/data.R * data.slices[s].users[u].SE)/data.PS + data.e
             )
 
     # --------------- Constraints for fg slices
@@ -333,6 +322,8 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             
     
     # --------------- Constraints for rlp slices
+    m.constr_k_u_floor_upper = pyo.ConstraintList()
+    m.constr_k_u_floor_lower = pyo.ConstraintList()
     m.constr_r_s_intent = pyo.ConstraintList()
     m.constr_sent_l_max = pyo.ConstraintList()
     m.constr_sent_T_s = pyo.ConstraintList()
@@ -352,7 +343,16 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     m.constr_maxover_s_le_b_max = pyo.ConstraintList()
     m.constr_p_s_intent = pyo.ConstraintList()
     for s in m.S_rlp:
-        
+        # CONSTR: k_u flooring upper bound
+        m.constr_k_u_floor_upper.add(
+            m.k_u[u] <= (data.B * m.R_u[u]/data.R * data.slices[s].users[u].SE)/data.PS
+        )
+
+        # CONSTR: k_u flooring lower bound
+        m.constr_k_u_floor_lower.add(
+            m.k_u[u] + 1 >= (data.B * m.R_u[u]/data.R * data.slices[s].users[u].SE)/data.PS + data.e
+        )
+
         # CONSTR: Throughput intent
         m.constr_r_s_intent.add(
             r_s[s] >= data.slices[s].r_req * len(U_s[s])

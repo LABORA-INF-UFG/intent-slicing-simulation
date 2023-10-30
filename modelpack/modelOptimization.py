@@ -115,12 +115,12 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     # --------------- Expressions for all slices
 
     r_u = dict()
-    for u in m.U:
-        # EXP: r_u calculation for all slices
-        r_u[u] = m.k_u[u] * data.PS
-    
     r_s = dict()
     for s in m.S:
+        for u in U_s[s]:
+            # EXP: r_u calculation for all slices
+            r_u[u] = data.B * (m.R_u[u]/data.R) * data.slices[s].users[u].SE / 1e3
+            
         # EXP: r_s calculation for all slices
         r_s[s] = sum(r_u[u] for u in U_s[s])
     
@@ -130,7 +130,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     # EXP: V_T the upper bound for any T_s
     V_T = (V_r + max(data.slices[s].b_max for s in m.S))/data.PS + max(data.slices[s].buffer[0] for s in m.S)
 
-    # EXP: V_buff the upper bound of buff_s_i
+    # EXP: V_buff the upper bound of any buff_s_i
     V_buff = max(data.slices[s].b_max for s in m.S)
 
     # EXP: V_over the upper bound of b_s

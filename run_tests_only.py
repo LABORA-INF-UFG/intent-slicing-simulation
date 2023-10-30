@@ -12,12 +12,6 @@ from baselines import BaselineAgent
 from basestation import Basestation
 from callbacks import ProgressBarManager
 
-train_param = {
-    "steps_per_trial": 2000, #2000,
-    "total_trials": 3, #45,
-    "runs_per_agent": 10,
-}
-
 test_param = {
     "steps_per_trial": 2000, #2000,
     "total_trials": 4, #50,
@@ -28,9 +22,9 @@ test_param = {
 # Create environment
 traffic_types = np.concatenate(
     (
-        np.repeat(["embb"], 4),
-        np.repeat(["urllc"], 3),
-        np.repeat(["be"], 3),
+        np.repeat(["embb"], 4), # 4 EMBB UEs
+        np.repeat(["urllc"], 3), # 3 URLLC UEs
+        np.repeat(["be"], 3), # 3 BE UEs
     ),
     axis=None,
 )
@@ -64,12 +58,6 @@ models = ["sac"]
 obs_space_modes = ["partial"] # , "full"]
 windows_sizes = [1]  # , 50, 100] # Window for calculating the moving mean of metrics (not used)
 seed = 100
-model_save_freq = int(
-    train_param["total_trials"]
-    * train_param["steps_per_trial"]
-    * train_param["runs_per_agent"]
-    / 10
-)
 n_eval_episodes = 5  # default is 5
 eval_freq = 10000  # default is 10000
 test_model = "best"  # or last

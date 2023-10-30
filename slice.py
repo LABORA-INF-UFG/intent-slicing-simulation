@@ -230,6 +230,7 @@ class Slice:
             hist_nowindows_ues.append(ue.no_windows_hist)
             if (step_number == (max_step_number - 1)) and self.save_hist_bool:
                 ue.save_hist()
+                ue.save_aux_hist() # Added for the linear model optimization
 
         # Update slice history
         self.update_hist(hist_ues, hist_nowindows_ues)

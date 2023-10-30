@@ -71,6 +71,21 @@ class UE:
         self.no_windows_hist = {
             hist_label: np.array([]) for hist_label in self.hist_labels
         }
+        
+        # Added for collecting simulation data to input in the linear model optimization
+        self.aux_hist_labels = [
+            "slice", # To which slice the UE belongs
+            "real_served_thr", # Maximum throughput possible (bits/s)
+            "rcv_pkts", # Number of received packets, including the dropped ones
+            "sent_pkts", # List of sent packets that waited i TTIs
+            "dropp_pkts", # Number of packets dropped
+            "buff_pkts", # List of buffer packets that waited i TTIs
+            "part_pkts", # Part of packet that started sending in the previous step
+        ]
+        self.aux_hist = {hist_label: np.array([]) for hist_label in self.aux_hist_labels}
+        self.aux_hist["slice"] = self.traffic_type
+        self.first_aux_update = True
+
         self.number_pkt_loss = np.array([])
         self.rng = rng
         self.partial_rec_pkts = 0
@@ -253,6 +268,43 @@ class UE:
                 self.hist[var[0]], value / normalize_factors[i]
             )
 
+    def update_aux_hist(
+        self,
+        real_served_thr: float,
+        rcv_pkts: int,
+        sent_pkts: list,
+        dropp_pkts: int,
+        buff_pkts: list,
+        part_pkts: float,
+    ) -> None:
+        '''
+        Update the aux variables history to enable the record to external files,
+        which are used for the linear model optmization.
+        '''
+        self.aux_hist_labels = [
+            "slice", # To which slice the UE belongs
+            "real_served_thr", # Maximum throughput possible (bits/s)
+            "rcv_pkts", # Number of received packets, including the dropped ones
+            "sent_pkts", # List of sent packets that waited i TTIs
+            "dropp_pkts", # Number of packets dropped
+            "buff_pkts", # List of buffer packets that waited i TTIs
+            "part_pkts", # Part of packet that started sending in the previous step
+        ]
+        
+        if self.first_aux_update:
+            self.aux_hist["buff_pkts"] = np.vstack([buff_pkts])
+            self.aux_hist["sent_pkts"] = np.vstack([sent_pkts])
+        else:
+            self.aux_hist["buff_pkts"] = np.vstack([self.aux_hist["buff_pkts"], buff_pkts])
+            self.aux_hist["sent_pkts"] = np.vstack([self.aux_hist["sent_pkts"], sent_pkts])
+        
+        self.aux_hist["real_served_thr"] = np.append(self.aux_hist["real_served_thr"], real_served_thr)
+        self.aux_hist["rcv_pkts"] = np.append(self.aux_hist["rcv_pkts"], rcv_pkts)
+        self.aux_hist["dropp_pkts"] = np.append(self.aux_hist["dropp_pkts"], dropp_pkts)
+        self.aux_hist["part_pkts"] = np.append(self.aux_hist["part_pkts"], part_pkts)
+
+        self.first_aux_update = False
+
     def save_hist(self) -> None:
         """
         Save variables history to external file.
@@ -268,6 +320,20 @@ class UE:
         np.savez_compressed((path + "ue{}").format(self.id), **self.no_windows_hist)
         if self.plots:
             UE.plot_metrics(self.bs_name, self.trial_number, self.id, self.root_path)
+    
+    def save_aux_hist(self) -> None:
+        """
+        Save aux variables history to external file.
+        """
+        path = "{}/hist/{}/trial{}/ues/".format(
+            self.root_path, self.bs_name, self.trial_number
+        )
+        try:
+            os.makedirs(path)
+        except OSError:
+            pass
+
+        np.savez_compressed((path + "aux_ue{}").format(self.id), **self.aux_hist)
 
     @staticmethod
     def read_hist(
@@ -367,6 +433,14 @@ class UE:
             self.buffer.get_avg_delay(),
             self.buffer.dropped_packets,
             step_number,
+        )
+        self.update_aux_hist( # TODO
+            real_served_thr,
+            rcv_pkts,
+            sent_pkts,
+            dropp_pkts,
+            buff_pkts,
+            part_pkts
         )
 
 

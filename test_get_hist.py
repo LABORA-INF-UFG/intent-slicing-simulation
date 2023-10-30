@@ -1,16 +1,8 @@
 import numpy as np
-
-ue1_file_loc = "./hist/test/sac/ws_1/partial/trial4/ues/ue1.npz"
-ue1_hist = np.load(ue1_file_loc)
-
-bs_file_loc = "./hist/test/sac/ws_1/partial/trial4/bs.npz"
-bs_hist = np.load(bs_file_loc)
-
-slice1_file_loc = "./hist/test/sac/ws_1/partial/trial4/slices/slice1.npz"
-slice1_hist = np.load(slice1_file_loc)
-
-for a in slice1_hist:
-    print(a)
+from modelpack.UserData import UserData
+# --------------------
+# EXPERIMENT CONSTANTS
+# --------------------
 
 R = 17 # Available RBGs, ORIGINAL = 17
 B = 100.0 * 10**6 # Bandwidth in hertz, ORIGINAL = 100
@@ -23,9 +15,75 @@ use_heavy_traffic = False # Choose heavy or moderate traffic
 allocate_all_resources = False # Use restriction to allocate all resources on leave it to be minimized
 
 # UEs per slice
-EMBB_USERS = 4 # ORIGINAL = 4
-URLLC_USERS = 3 # ORIGINAL = 3
-BE_USERS = 3 # ORIGINAL = 3
+EMBB_USERS = 4
+URLLC_USERS = 3
+BE_USERS = 3
+
+# Slice IDs
+EMBB_ID = 1
+URLLC_ID = 2
+BE_ID = 3
+
+TRIAL = 4 # Number of the trial used for generating data for this experiment
+
+# File location strings for UEs, slices and the trial scenario (basestation)
+ue_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/ues/ue{ue_id}.npz"
+slice_file_loc = "./hist/test/sac/ws_1/partial/trial{trial_num}/slices/slice{slice_id}.npz"
+bs_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/bs.npz"
+
+
+# ------------------------
+# READING TRIAL DATA FILES
+# ------------------------
+
+# Reading the trial scenario (basestation) data
+bs_hist = np.load(bs_file_loc_base.format(trial_num=TRIAL))
+
+# --------------------------- Reading EMBB data
+
+# Reading the EMBB slice data
+embb_hist = np.load(slice_file_loc.format(trial_num=TRIAL, slice_id=EMBB_ID))
+
+# Reading data from EMBB UEs
+user_data = list()
+for u_id in range(1, EMBB_USERS + 1):
+    ue_hist = np.load(ue_file_loc_base.format(trial_num=TRIAL, ue_id=u_id))
+    user_data.append(UserData(id=u_id, s="embb", SE=list(ue_hist["se"])))
+    if u_id == 1:
+        print(ue_hist["pkt_loss"])
+
+    # Generating slice data from its users
+    
+
+
+# --------------------------- Reading URLLC data
+
+# Reading the URLLC slice data
+urllc_hist = np.load(slice_file_loc.format(trial_num=TRIAL, slice_id=URLLC_ID))
+
+# Reading data from URLLC UEs
+user_data = list()
+for u_id in range(EMBB_USERS + 1, EMBB_USERS + URLLC_USERS + 1):
+    ue_hist = np.load(ue_file_loc_base.format(trial_num=TRIAL, ue_id=u_id))
+    user_data.append(UserData(id=u_id, s="embb", SE=list(ue_hist["se"])))
+
+# --------------------------- Reading BE data
+
+# Reading the BE slice data
+be_hist = np.load(slice_file_loc.format(trial_num=TRIAL, slice_id=BE_ID))
+
+# Reading data from BE UEs
+user_data = list()
+for u_id in range(EMBB_USERS + URLLC_USERS + 1, EMBB_USERS + URLLC_USERS + BE_USERS + 1):
+    ue_hist = np.load(ue_file_loc_base.format(trial_num=TRIAL, ue_id=u_id))
+    user_data.append(UserData(id=u_id, s="embb", SE=list(ue_hist["se"])))
+
+
+
+
+
+
+
 
 
 

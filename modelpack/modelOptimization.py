@@ -128,13 +128,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     V_r = data.B * max(max(data.slices[s].users[u].SE for u in U_s[s]) for s in m.S)
 
     # EXP: V_T the upper bound for any T_s
-    V_T = (V_r + max(data.slices[s].b_max for s in m.S))/data.PS + max(data.slices[s].buffer[0] for s in m.S)
+    V_T = max(V_r/data.PS + data.slices[s].b_s_max + data.slices[s].hist_buff[data.n][0] for s in m.S)
 
     # EXP: V_buff the upper bound of any buff_s_i
-    V_buff = max(data.slices[s].b_max for s in m.S)
+    V_buff = max(data.slices[s].b_s_max for s in m.S)
 
     # EXP: V_over the upper bound of b_s
-    V_over = max(data.slices[s].b_max for s in m.S) + max(data.slices[s].buffer[0] for s in m.S)
+    V_over = V_buff + max(data.slices[s].hist_rcv[data.n] for s in m.S)
 
     # --------------- Expressions for rlp slices
     

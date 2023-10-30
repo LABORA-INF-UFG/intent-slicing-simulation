@@ -232,15 +232,12 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             g_s[s] >= data.slices[s].g_req * len(U_s[s])
         )
         
-        
+        # Fifth-percentile constraints
         if data.n == 0:
             # CONSTR: Fifth-percentile intent for n = 0
             m.constr_f_s_intent.add(
-                r_s[s] >= data.slices[s].f_req * len(data.slices[s].users)
-            )
-            
-            
-        
+                r_s[s] >= data.slices[s].f_req * len(U_s[s])
+            )    
         elif data.n == 1:
             sort_h = data.slices[s].hist_r[0]
             
@@ -256,12 +253,12 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             
             # CONSTR: Fifth-percentile intent for n = 1
             m.constr_f_s_intent.add(
-                r_s[s] >= m.psi_s[s] * data.slices[s].f_req * len(data.slices[s].users)
+                r_s[s] >= m.psi_s[s] * data.slices[s].f_req * len(U_s[s])
             )
         
         else:
-            sort = data.slices[s].getSort()
-            h = int((data.w+1)/20)
+            sort = data.slices[s].getSortedThroughputWindow(data.w, data.n)
+            h = int((data.w)/20)
             sort_h = sort[h]
             sort_h_1 = sort[h+1]
 
@@ -317,7 +314,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
             
             # CONSTR: Fifth-percentile intent for n > 1
             m.constr_f_s_intent.add(
-                r_s[s] >= m.omega_s[s] * data.slices[s].f_req * len(data.slices[s].users)
+                r_s[s] >= m.omega_s[s] * data.slices[s].f_req * len(U_s[s])
             )
             
     

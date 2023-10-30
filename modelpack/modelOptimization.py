@@ -4,6 +4,27 @@ from .SliceData import SliceData
 from .ModelData import ModelData
 
 def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo.ConcreteModel:
+    '''
+    Function for building and solving the linear model.
+
+    Parameters
+    ----------
+    data: ModelData
+        Input data for building the model.
+    
+    method: str
+        Lower case string with the solver's name (e.g. cplex or gurobi)  
+    
+    allocate_all_resources: bool, optional
+        Flag that indicates how to constraint the slice RBGs. If true. then sum(R_s) == R.
+        Else, sum(R_s) <= R and the allocation is minimized.
+    
+    Returns
+    -------
+    ConcreteModel
+        The built and solved model with values accessible by using m.var_name.value attribute. 
+    '''
+
     print ("Building model...")
 
     m = pyo.ConcreteModel()

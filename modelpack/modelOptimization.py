@@ -448,14 +448,14 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     # DUAL MODEL
     # ----------
 
-    #m.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT_EXPORT)
-    print("Model built!")
-    print("Number of constraints =",m.nconstraints())
-    print("Number of variables =",m.nvariables())
+    #m.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT_EXPORT) # I don't actually know if this works
 
     # -------
     # SOLVING
     # -------
+    print("Model built!")
+    print("Number of constraints =",m.nconstraints())
+    print("Number of variables =",m.nvariables())
 
     print("Starting solving via {}...".format(method))
     opt = pyo.SolverFactory(method)

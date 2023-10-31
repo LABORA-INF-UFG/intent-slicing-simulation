@@ -75,6 +75,7 @@ class UE:
         
         # Added for collecting simulation data to input in the linear model optimization
         self.aux_hist_labels = [
+            "id", # UE id
             "slice", # To which slice the UE belongs
             "real_served_thr", # Maximum throughput possible (bits/s)
             "rcv_pkts", # Number of received packets, including the dropped ones
@@ -82,8 +83,10 @@ class UE:
             "dropp_pkts", # Number of packets dropped
             "buff_pkts", # List of buffer packets that waited i TTIs
             "part_pkts", # Part of packet that started sending in the previous step
+            "se", # Spectral efficiency (bits/s/Hz)
         ]
         self.aux_hist = {hist_label: np.array([]) for hist_label in self.aux_hist_labels}
+        self.aux_hist["id"] = self.id
         self.aux_hist["slice"] = self.traffic_type
         self.first_aux_update = True
 
@@ -277,20 +280,12 @@ class UE:
         dropp_pkts: int,
         buff_pkts: list,
         part_pkts: float,
+        se: float
     ) -> None:
         '''
         Update the aux variables history to enable the record to external files,
         which are used for the linear model optmization.
         '''
-        self.aux_hist_labels = [
-            "slice", # To which slice the UE belongs
-            "real_served_thr", # Maximum throughput possible (bits/s)
-            "rcv_pkts", # Number of received packets, including the dropped ones
-            "sent_pkts", # List of sent packets that waited i TTIs
-            "dropp_pkts", # Number of packets dropped
-            "buff_pkts", # List of buffer packets that waited i TTIs
-            "part_pkts", # Part of packet that started sending in the previous step
-        ]
         
         if self.first_aux_update:
             self.aux_hist["buff_pkts"] = np.vstack([buff_pkts])
@@ -303,6 +298,7 @@ class UE:
         self.aux_hist["rcv_pkts"] = np.append(self.aux_hist["rcv_pkts"], rcv_pkts)
         self.aux_hist["dropp_pkts"] = np.append(self.aux_hist["dropp_pkts"], dropp_pkts)
         self.aux_hist["part_pkts"] = np.append(self.aux_hist["part_pkts"], part_pkts)
+        self.aux_hist["se"] = np.append(self.aux_hist["se"], se)
 
         self.first_aux_update = False
 
@@ -450,7 +446,8 @@ class UE:
             sent_copy,
             dropp_pkts_copy,
             buffer_copy,
-            part_pkts_copy
+            part_pkts_copy,
+            self.se[step_number]
         )
 
 

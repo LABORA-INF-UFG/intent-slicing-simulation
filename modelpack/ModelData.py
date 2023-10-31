@@ -30,14 +30,8 @@ class ModelData:
     def addSlice(self, s: SliceData):
         self.slices[s.id] = s
     
-    def optimizeAndAdvanceStep(self, model: pyo.ConcreteModel):
-        # Execute the model solution
-        # TODO
-        
-        # Saving results
-        # TODO
-
+    def advanceStep(self):
         # Incrementing step and window
         self.n += 1
-        if w < self.w_max:
-            w += 1
+        if self.w < self.w_max:
+            self.w += 1

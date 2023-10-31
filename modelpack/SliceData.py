@@ -44,8 +44,8 @@ class SliceData:
         
         # Calculating the number of packets on the buffer at the beggining of each step,
         # considering packets that tried to arrive the buffer but were dropped (list of packets)
-        self.hist_b_s = []*n_steps
-        for n in range(len(self.hist_buff)):
+        self.hist_b_s = [0]*n_steps
+        for n in range(n_steps):
             self.hist_b_s[n] = self.hist_rcv[n] - self.hist_buff[n][0] + sum(self.hist_buff[n])
 
     # Associates user with the slice

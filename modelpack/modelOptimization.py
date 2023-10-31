@@ -3,7 +3,7 @@ from pyomo import environ as pyo
 from .SliceData import SliceData
 from .ModelData import ModelData
 
-def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo.ConcreteModel:
+def optimize(data: ModelData, method: str, allocate_all_resources = True,tee=False):
     '''
     Function for building and solving the linear model.
 
@@ -18,6 +18,9 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     allocate_all_resources: bool, optional
         Flag that indicates how to constraint the slice RBGs. If true. then sum(R_s) == R.
         Else, sum(R_s) <= R and the allocation is minimized.
+
+    tee: bool, optional
+        Flag for verbose solving.
     
     Returns
     -------
@@ -140,13 +143,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
     for s in m.S:
         for u in U_s[s]:
             # EXP: r_u calculation for all slices
-            r_u[u] = data.B * (m.R_u[u]/data.R) * data.slices[s].users[u].SE / 1e3
+            r_u[u] = data.B * (m.R_u[u]/data.R) * data.slices[s].users[u].SE[data.n] / 1e3
             
         # EXP: r_s calculation for all slices
         r_s[s] = sum(r_u[u] for u in U_s[s])
     
     # EXP: V_r the upper bound for any r_s
-    V_r = data.B * max(max(data.slices[s].users[u].SE for u in U_s[s]) for s in m.S)
+    V_r = data.B * max(max(data.slices[s].users[u].SE[data.n] for u in U_s[s]) for s in m.S)
 
     # EXP: V_T the upper bound for any T_s
     V_T = max(V_r/data.PS + data.slices[s].b_s_max + data.slices[s].hist_buff[data.n][0] for s in m.S)
@@ -436,7 +439,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
         # CONSTR: Average Buffer Latency intent
         m.constr_l_s_intent.add(
             sum((data.slices[s].hist_acc[data.n][i] + m.sent_s_i[s,i])*i for i in m.I)
-            <= data.slices[s].l_req * sum((data.slices[s].hist_acc[data.n][i] + m.sent_s_i[s,i]))
+            <= data.slices[s].l_req * sum((data.slices[s].hist_acc[data.n][i] + m.sent_s_i[s,i]) for i in m.I)
         )
         
         # CONSTR: maxover_s >= b_s_sup
@@ -480,7 +483,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True) -> pyo
 
     print("Starting solving via {}...".format(method))
     opt = pyo.SolverFactory(method)
-    results = opt.solve(m, tee=True)
+    results = opt.solve(m, tee=tee)
     print("Solved!")
 
-    return m
+    return m, results

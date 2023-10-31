@@ -3,6 +3,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+import copy as cp
 from numpy.random import BitGenerator
 
 from buffer import Buffer
@@ -157,7 +158,7 @@ class UE:
                 (number_rbs_allocated / self.total_number_rbs)
                 * self.bandwidth
                 * self.se[step_number]/1e3 # Because SE is in seconds and we want for ms
-            )/ self.packet_size
+            )
 
     def get_pkt_throughput(
         self, step_number: int, number_rbs_allocated: int
@@ -171,7 +172,7 @@ class UE:
         This function returns the integer number of packets that can be sent
         in this step.
         """
-        pkts = self.get_real_pkt_throughput(step_number, number_rbs_allocated)
+        pkts = self.get_real_pkt_throughput(step_number, number_rbs_allocated)/self.packet_size
         whole_pkts = np.floor(pkts)
         if (self.buffer.get_buffer_n_pkts() > whole_pkts):
             self.partial_sent_pkts = pkts - whole_pkts
@@ -420,27 +421,36 @@ class UE:
         buffer and sending them in according to the throughput available and
         buffer.
         """
+        part_pkts_copy = self.partial_sent_pkts
+        pkt_received = self.get_arrived_packets() 
         pkt_throughput = self.get_pkt_throughput(step_number, number_rbs_allocated)
-        pkt_received = self.get_arrived_packets()
-        #print("Rec =",pkt_received,"Sent =", pkt_throughput)
+        real_served_thr = self.get_real_pkt_throughput(step_number, number_rbs_allocated)
+        
+    
         self.buffer.receive_packets(pkt_received)
+        buffer_copy = cp.copy(self.buffer.buffer) # Saving the buffer for hist
+        dropp_pkts_copy = self.buffer.dropped_packets
+
         self.buffer.send_packets(pkt_throughput)
+        sent_copy = buffer_copy - self.buffer.buffer # Saving the sent packets
+
         self.update_hist(
             pkt_received,
             self.buffer.sent_packets,
-            self.get_real_pkt_throughput(step_number, number_rbs_allocated),
+            real_served_thr,
             self.buffer.get_buffer_occupancy(),
             self.buffer.get_avg_delay(),
             self.buffer.dropped_packets,
             step_number,
         )
-        self.update_aux_hist( # TODO
-            real_served_thr,
-            rcv_pkts,
-            sent_pkts,
-            dropp_pkts,
-            buff_pkts,
-            part_pkts
+
+        self.update_aux_hist(
+            int(real_served_thr),
+            pkt_received,
+            sent_copy,
+            dropp_pkts_copy,
+            buffer_copy,
+            part_pkts_copy
         )
 
 

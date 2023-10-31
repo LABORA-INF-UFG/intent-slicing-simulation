@@ -4,6 +4,8 @@ from modelpack.UserData import UserData
 # EXPERIMENT CONSTANTS
 # --------------------
 
+# TODO: Get these constants by another hist_aux for the basestation
+
 R = 17 # Available RBGs, ORIGINAL = 17
 B = 100.0 * 10**6 # Bandwidth in hertz, ORIGINAL = 100
 PS = 1024 # Packet size in bits, ORIGINAL = 8192*8
@@ -27,7 +29,7 @@ BE_ID = 3
 TRIAL = 4 # Number of the trial used for generating data for this experiment
 
 # File location strings for UEs, slices and the trial scenario (basestation)
-ue_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/ues/ue{ue_id}.npz"
+ue_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/ues/aux_ue{ue_id}.npz"
 slice_file_loc = "./hist/test/sac/ws_1/partial/trial{trial_num}/slices/slice{slice_id}.npz"
 bs_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/bs.npz"
 
@@ -36,6 +38,11 @@ bs_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/bs.npz"
 # READING TRIAL DATA FILES
 # ------------------------
 
+for u in range(1,11):
+    ue_hist = np.load(ue_file_loc_base.format(trial_num=TRIAL, ue_id=u))
+    print(ue_hist["slice"])
+
+'''
 # Reading the trial scenario (basestation) data
 bs_hist = np.load(bs_file_loc_base.format(trial_num=TRIAL))
 
@@ -79,7 +86,7 @@ for u_id in range(EMBB_USERS + URLLC_USERS + 1, EMBB_USERS + URLLC_USERS + BE_US
     user_data.append(UserData(id=u_id, s="embb", SE=list(ue_hist["se"])))
 
 
-
+'''
 
 
 

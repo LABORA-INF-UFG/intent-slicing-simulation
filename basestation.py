@@ -43,7 +43,7 @@ class Basestation(gym.Env):
         windows_size_obs: int = 100,
         steps_update_traffics: int = 200,
         obs_space_mode: str = "partial",
-        rng: BitGenerator = np.random.default_rng(),
+        rng: BitGenerator = np.random.default_rng(), # Put seed between parantheses
         plots: bool = False,
         slice_plots: bool = False,
         ue_plots: bool = False,
@@ -154,22 +154,25 @@ class Basestation(gym.Env):
             else [1, 1, 1, 1, 1, 1, 1, 1]
         )
 
-    def step(self, action: np.array):
+    def step(self, action: np.array, action_already_integer=False):
         """
         Performs the resource block allocation among slices in according to the
         action received.
         """
-        rbs_allocation = (
-            ((action + 1) / np.sum(action + 1)) * self.total_number_rbs
-            if np.sum(action + 1) != 0
-            else np.ones(action.shape[0])
-            * (1 / action.shape[0])
-            * self.total_number_rbs
-        )
-        action_idx = np.argmin(
-            np.sum(np.abs(self.action_space_options - rbs_allocation), axis=1)
-        )
-        action_values = self.action_space_options[action_idx]
+        if not action_already_integer:
+            rbs_allocation = (
+                ((action + 1) / np.sum(action + 1)) * self.total_number_rbs
+                if np.sum(action + 1) != 0
+                else np.ones(action.shape[0])
+                * (1 / action.shape[0])
+                * self.total_number_rbs
+            )
+            action_idx = np.argmin(
+                np.sum(np.abs(self.action_space_options - rbs_allocation), axis=1)
+            )
+            action_values = self.action_space_options[action_idx]
+        else:
+            action_values = action # For using the optimization model result
         for i in range(len(action_values)):
             self.slices[i].step(
                 self.step_number,

@@ -3,7 +3,7 @@ from pyomo import environ as pyo
 from .SliceData import SliceData
 from .ModelData import ModelData
 
-def optimize(data: ModelData, method: str, allocate_all_resources = True,tee=False):
+def optimize(data: ModelData, method: str, allocate_all_resources = True,verbose=False):
     '''
     Function for building and solving the linear model.
 
@@ -27,8 +27,8 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True,tee=Fal
     ConcreteModel
         The built and solved model with values accessible by using m.var_name.value attribute. 
     '''
-
-    print ("Building model...")
+    if verbose:
+        print ("Building model...")
 
     m = pyo.ConcreteModel()
 
@@ -477,13 +477,16 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True,tee=Fal
     # -------
     # SOLVING
     # -------
-    print("Model built!")
-    print("Number of constraints =",m.nconstraints())
-    print("Number of variables =",m.nvariables())
+    if verbose:
+        print("Model built!")
+        print("Number of constraints =",m.nconstraints())
+        print("Number of variables =",m.nvariables())
+        print("Starting solving via {}...".format(method))
 
-    print("Starting solving via {}...".format(method))
     opt = pyo.SolverFactory(method)
-    results = opt.solve(m, tee=tee)
-    print("Solved!")
+    results = opt.solve(m, tee=verbose)
+    
+    if verbose:
+        print("Solved!")
 
     return m, results

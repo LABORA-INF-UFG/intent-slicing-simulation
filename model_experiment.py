@@ -20,10 +20,10 @@ B_MAX = 1024*64*PS # User buffer capacity in bits, ORIGINAL = 1024
 L_MAX = 100 # Maximum packets latency in TTIs (ms) 
 WINDOW = 10 # Window size for historical metrics
 e = 10**(-5) # Small constant for approximation
-use_heavy_traffic = False # Choose heavy or moderate traffic
+use_heavy_requirements = False # Choose heavy or moderate requirements
 allocate_all_resources = False # Use restriction to allocate all resources on leave it to be minimized
 
-# Required metrics for moderate traffic
+# Moderate requirements
 mod_req = dict()
 mod_req["embb"] = dict()
 mod_req["urllc"] = dict()
@@ -37,7 +37,7 @@ mod_req["urllc"]['p'] = 1.0 * 10.0**(-5)
 mod_req["be"]['g'] = 5 * 10**3
 mod_req["be"]['f'] = 2 * 10**3
 
-# Required metrics for heavy traffic
+# Heavy requirements
 hvy_req = dict()
 hvy_req["embb"] = dict()
 hvy_req["urllc"] = dict()
@@ -52,7 +52,7 @@ hvy_req["be"]['g'] = 10 * 10**3
 hvy_req["be"]['f'] = 5 * 10**3
 
 # Selecting the requirements for the right traffic pattern
-if use_heavy_traffic:
+if use_heavy_requirements:
     requirements = hvy_req
 else:
     requirements = mod_req
@@ -151,8 +151,11 @@ for s in ue_hist_per_slice.keys():
 feasible=[0]*STEPS
 feasible_solutions = 0
 unfeasible_solutions = 0
+flag_first_unfeasible = True
+first_unfeasible = -1
 for i in range(STEPS):
-    m, results = optimize(data=data, method="cplex", allocate_all_resources=allocate_all_resources,tee=False)
+    print("STEP",i)
+    m, results = optimize(data=data, method="cplex", allocate_all_resources=allocate_all_resources,verbose=False)
     data.advanceStep()
     if results.solver.termination_condition == "optimal":
         feasible[i]=True
@@ -160,7 +163,12 @@ for i in range(STEPS):
     else:
         feasible[i]=False
         unfeasible_solutions+=1
+        if flag_first_unfeasible:
+            first_unfeasible = i
+            flag_first_unfeasible=False
 
 print(feasible)
 print("Feasible solutions=",feasible_solutions)
 print("Unfeasible solutions=",unfeasible_solutions)
+if not flag_first_unfeasible:
+    print("First unfeasible solution at step",first_unfeasible)

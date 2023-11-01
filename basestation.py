@@ -43,12 +43,12 @@ class Basestation(gym.Env):
         windows_size_obs: int = 100,
         steps_update_traffics: int = 200,
         obs_space_mode: str = "partial",
-        rng: BitGenerator = np.random.default_rng(), # Put seed between parantheses
+        rng: BitGenerator = np.random.default_rng(),
         plots: bool = False,
         slice_plots: bool = False,
         ue_plots: bool = False,
         save_hist: bool = False,
-        normalize_ue_obs: bool = False, # DESATIVAR PARA OBTER ENV PARA O MODELO
+        normalize_ue_obs: bool = False,
         baseline: bool = False,
         root_path: str = ".",
         agent_type: str = "main",
@@ -70,7 +70,7 @@ class Basestation(gym.Env):
         self.traffic_throughputs = traffic_throughputs
         self.slice_requirements_traffics = slice_requirements_traffics
         self.slice_requirements = self.slice_requirements_traffics[
-            list(self.slice_requirements_traffics.keys())[0]
+            list(self.slice_requirements_traffics.keys())[0] # Initializes with light requirements
         ]
         self.windows_size_obs = windows_size_obs
         self.steps_update_traffics = steps_update_traffics

@@ -3,20 +3,22 @@ from modelpack.UserData import UserData
 from modelpack.ModelData import ModelData
 from modelpack.SliceData import SliceData
 from modelpack.modelOptimization import optimize
+
+'''
+This experiment uses data from the DRL agent testing as
+input for the model. We evaluate the feasibility of
+assuring all intents if the model were in the same situation
+that the agent is. 
+'''
+
 # --------------------
 # EXPERIMENT CONSTANTS
 # --------------------
 
-# TODO: Get these constants by another hist_aux for the basestation
-'''
-# Reading the trial scenario (basestation) data
-bs_hist = np.load(bs_file_loc_base.format(trial_num=TRIAL))
-'''
-
 R = 17 # Available RBGs, ORIGINAL = 17
 B = 100.0 * 10**6 # Bandwidth in hertz, ORIGINAL = 100
 PS = 1024 # Packet size in bits, ORIGINAL = 8192*8
-B_MAX = 1024*64*PS # User buffer capacity in bits, ORIGINAL = 1024
+B_MAX = 1024*64 # User buffer capacity in packets, ORIGINAL = 1024
 L_MAX = 100 # Maximum packets latency in TTIs (ms) 
 WINDOW = 10 # Window size for historical metrics
 e = 10**(-5) # Small constant for approximation

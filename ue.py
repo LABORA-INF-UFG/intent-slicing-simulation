@@ -92,8 +92,16 @@ class UE:
 
         self.number_pkt_loss = np.array([])
         self.rng = rng
+
+        # Added for capturing data for the optimization model
         self.partial_rec_pkts = 0
         self.partial_sent_pkts = 0
+        self.last_real_served_thr = 0
+        self.pkt_received = self.get_arrived_packets()
+        self.buffer.receive_packets(self.pkt_received)
+        self.dropped_pkts = self.buffer.dropped_packets
+        self.buffer_array = cp.copy(self.buffer.buffer)
+        
 
 
     def define_traffic_function(self):
@@ -110,7 +118,7 @@ class UE:
                     (self.traffic_throughput * 1e3) / self.packet_size
                     )
             )
-            whole_pkts = np.floor(pkts)
+            whole_pkts = int(np.floor(pkts))
             self.partial_rec_pkts = pkts - whole_pkts
             return whole_pkts
 
@@ -120,7 +128,7 @@ class UE:
                     (self.traffic_throughput * 1e3) / self.packet_size
                     )
             )
-            whole_pkts = np.floor(pkts)
+            whole_pkts = int(np.floor(pkts))
             self.partial_rec_pkts = pkts - whole_pkts
             return whole_pkts
 
@@ -132,7 +140,7 @@ class UE:
                     (self.traffic_throughput * 1e3) / self.packet_size
                     )
             )
-            whole_pkts = np.floor(pkts)
+            whole_pkts = int(np.floor(pkts))
             self.partial_rec_pkts = pkts - whole_pkts
             return whole_pkts
 
@@ -413,42 +421,43 @@ class UE:
 
     def step(self, step_number: int, number_rbs_allocated: int) -> None:
         """
-        Executes the UE packets processing. Adding the received packets to the
-        buffer and sending them in according to the throughput available and
-        buffer.
+        Executes the UE packets processing. Assumes that the buffer is already
+        updated from the last step. Sends packets and updates the buffer with
+        new received packets for the next iteration.
         """
-        part_pkts_copy = self.partial_sent_pkts
-        pkt_received = self.get_arrived_packets() 
         pkt_throughput = self.get_pkt_throughput(step_number, number_rbs_allocated)
-        real_served_thr = self.get_real_pkt_throughput(step_number, number_rbs_allocated)
-        
-    
-        self.buffer.receive_packets(pkt_received)
+        self.last_real_served_thr = self.get_real_pkt_throughput(step_number, number_rbs_allocated)
         buffer_copy = cp.copy(self.buffer.buffer) # Saving the buffer for hist
-        dropp_pkts_copy = self.buffer.dropped_packets
 
         self.buffer.send_packets(pkt_throughput)
-        sent_copy = buffer_copy - self.buffer.buffer # Saving the sent packets
+        self.sent_array = buffer_copy - self.buffer.buffer # Saving the sent packets
 
         self.update_hist(
-            pkt_received,
+            self.pkt_received,
             self.buffer.sent_packets,
-            real_served_thr,
+            self.last_real_served_thr,
             self.buffer.get_buffer_occupancy(),
             self.buffer.get_avg_delay(),
-            self.buffer.dropped_packets,
+            self.dropped_pkts,
             step_number,
         )
 
         self.update_aux_hist(
-            int(real_served_thr),
-            pkt_received,
-            sent_copy,
-            dropp_pkts_copy,
+            self.last_real_served_thr,
+            self.pkt_received,
+            self.sent_array,
+            self.dropped_pkts,
             buffer_copy,
-            part_pkts_copy,
+            self.partial_sent_pkts,
             self.se[step_number]
         )
+
+        # Updating the buffer for the next iteration
+        self.pkt_received = self.get_arrived_packets()
+        self.buffer.receive_packets(self.pkt_received)
+        self.buffer_array = cp.copy(self.buffer.buffer)
+        self.dropped_pkts = self.buffer.dropped_packets
+
 
 
 def main():

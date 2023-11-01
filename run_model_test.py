@@ -81,6 +81,7 @@ env = Basestation(
         windows_size_obs,
         obs_space_mode,
     ),
+    bandwidth=8e8, # Original = 1e8
     max_number_steps=test_param["steps_per_trial"],
     max_number_trials=test_param["total_trials"],
     traffic_types=traffic_types,
@@ -107,6 +108,7 @@ data = ModelData(
 for s in env.slices:
     slice = SliceData(
         id=s.name,
+        l_max=env.buffer_max_lat,
         hist_r=np.array([]),
         hist_d=np.array([]),
         hist_rcv=np.array([]),
@@ -139,27 +141,61 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
     for _ in tqdm(range(test_param["steps_per_trial"]),leave=False, desc="Steps"):
         updateRequirements(env,data)
 
-        for s in env.slices:
-            slice_r = 0
+        # Updating model data before the simulation step
+        for s in env.slices:    
             slice_d = 0
             slice_rcv = 0
             slice_part = 0
             slice_buff = np.zeros(data.l_max+1)
-            slice_sent = np.zeros(data.l_max+1)
             
             # Get r, d, rcv, part, buff and sent for all users and sum to get the slice metric
             # Change the UE class to getting all data right
+            
+            # Change UE step to calculate received packets and buffer calling the step to send them
             for u in s.ues:
-                pass
+                d = u.dropped_pkts
+                rcv = u.pkt_received
+                part = u.partial_sent_pkts
+                buff = u.buffer_array
 
-            data.slices[s.name].updateHist(
-                slice_r,
-                slice_d,
-                slice_rcv,
-                slice_part,
-                slice_buff,
-                slice_sent
+                slice_d += d
+                slice_rcv += rcv
+                slice_part += part
+                slice_buff += buff
+            # print(s.name, "before step")
+            # print("slice d =",slice_d)
+            # print("slice rcv =",slice_rcv)
+            # print("slice part =",slice_part)
+            # print("slice buff =",slice_buff)
+            data.slices[s.name].updateHistBefStep(
+                d=slice_d,
+                rcv=slice_rcv,
+                part=slice_part,
+                buff=slice_buff
             )
 
-        scheduling = [1,3,5] # Get optimization result here
+        m, results = optimize(data=data, method="cplex", allocate_all_resources=False, verbose=False)
+        if results.solver.termination_condition != "optimal":
+            print("\nStep",data.n,"unfeasible")
+            exit()
+        
+        scheduling = [m.R_s["be"].value, m.R_s["embb"].value, m.R_s["urllc"].value]
         env.step(scheduling, action_already_integer=True)
+
+        # Updating model data after the simulation step
+        for s in env.slices:
+            slice_r = 0
+            slice_sent = np.zeros(data.l_max+1)
+            for u in s.ues:
+                r = u.last_real_served_thr
+                sent = u.sent_array
+
+                slice_r += r
+                slice_sent += sent
+            # print(s.name, "after step")
+            # print("slice r =",slice_r)
+            # print("slice sent =",slice_sent)
+            data.slices[s.name].updateHistAftStep(
+                    r=slice_r,
+                    sent=slice_sent
+                )

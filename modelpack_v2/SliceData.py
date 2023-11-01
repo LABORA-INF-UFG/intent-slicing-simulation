@@ -5,6 +5,7 @@ class SliceData:
     def __init__(
             self,
             id: str, # Name of the slice
+            l_max: int, # Maximum latency to drop a packet (TTIs, steps or ms)
             hist_r: list, # Historical served throughput (list of Mb/s or Kb/ms)
             hist_d: list, # Historical dropped packets (list of packets)
             hist_rcv: list, # Historical received packets (list of packets)
@@ -37,6 +38,14 @@ class SliceData:
         # Initializing a dictionary for saving users
         self.users = dict()
 
+        # Initializing the number of packets on the buffer at the beggining of each step,
+        # considering packets that tried to arrive the buffer but were dropped (list of packets)
+        self.hist_b_s = np.array([])
+        
+        # Initializing the accumulated sent packets of previous steps (list of list of packets)
+        self.acc = np.zeros(l_max+1)
+        self.hist_acc = np.ndarray((0,l_max+1))
+
     # Associates user with the slice
     def addUser (self, u: UserData) -> None:
         self.users[u.id] = u
@@ -46,19 +55,27 @@ class SliceData:
     def getSortedThroughputWindow (self, w, n):
         return sorted(self.hist_r[n-w+1:n])
     
-    # Updates the slice data
-    def updateHist(
+    # Updates the slice data before the simulation step and model soving
+    def updateHistBefStep(
         self,
-        r: int,
         d:int,
         rcv:int,
         part:float,
         buff:np.array,
-        sent:np.array
         ):
-        self.hist_r = np.append(self.hist_r, r)
         self.hist_d = np.append(self.hist_d, d)
         self.hist_rcv = np.append(self.hist_rcv, rcv)
         self.hist_part = np.append(self.hist_part, part)
-        self.hist_buff=np.vstack([self.hist_buff, buff])
-        self.hist_sent=np.vstack([self.hist_sent, buff])
+        self.hist_buff = np.vstack([self.hist_buff, buff])
+        self.hist_b_s = np.append(self.hist_b_s, rcv - buff[0] + sum(buff))
+        self.hist_acc = np.vstack([self.hist_acc, self.acc])    
+    
+    # Updates the slice data after the simulation step and model soving
+    def updateHistAftStep(
+        self,
+        r: int,
+        sent:np.array
+        ):
+        self.hist_r = np.append(self.hist_r, r)
+        self.hist_sent=np.vstack([self.hist_sent, sent])
+        self.acc += sent

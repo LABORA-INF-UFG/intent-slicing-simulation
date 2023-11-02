@@ -14,23 +14,28 @@ from callbacks import ProgressBarManager
 
 test_param = {
     "steps_per_trial": 2000, #2000,
-    "total_trials": 4, #50,
-    "initial_trial": 4, #46,
+    "total_trials": 50, #50,
+    "initial_trial": 50, #46,
     "runs_per_agent": 1,
 }
 
 # Create environment
+EMBB_USERS = 2 # Original = 4
+URLLC_USERS = 2 # Original = 3
+BE_USERS = 2 # Original = 3
+
 traffic_types = np.concatenate(
     (
-        np.repeat(["embb"], 4), # 4 EMBB UEs
-        np.repeat(["urllc"], 3), # 3 URLLC UEs
-        np.repeat(["be"], 3), # 3 BE UEs
+        np.repeat(["embb"], EMBB_USERS),
+        np.repeat(["urllc"], URLLC_USERS),
+        np.repeat(["be"], BE_USERS),
     ),
     axis=None,
 )
+
 traffic_throughputs = {
     "light": {
-        "embb": 15,
+        "embb": 15, # Mbps = Kb/ms = Kb/step
         "urllc": 1,
         "be": 15,
     },
@@ -182,6 +187,7 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                     windows_size_obs,
                     obs_space_mode,
                 ),
+                number_ues=EMBB_USERS + URLLC_USERS + BE_USERS,
                 max_number_steps=test_param["steps_per_trial"],
                 max_number_trials=test_param["total_trials"],
                 traffic_types=traffic_types,
@@ -224,13 +230,11 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                     leave=False,
                     desc="Steps",
                 ):
-                    # INSERT OPTIMAL CALCULATION HERE
                     action, _states = (
                         agent.predict(obs, deterministic=True)
                         if model in models
                         else agent.predict(obs)
                     )
-                    # Use "action" var as a vector of RRB allocation
                     step = env.step(action)
                     if (len(step) == 4):
                         obs, rewards, dones, info = step

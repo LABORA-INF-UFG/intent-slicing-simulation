@@ -17,18 +17,18 @@ from modelpack_v2.ModelData import ModelData
 from modelpack_v2.SliceData import SliceData
 from modelpack_v2.modelOptimization import optimize
 
-# Constants and configuration
+# Setting up the experiment
 
 test_param = {
     "steps_per_trial": 2000, #2000,
-    "total_trials": 4, #50,
-    "initial_trial": 4, #46,
+    "total_trials": 50, #50,
+    "initial_trial": 50, #46,
     "runs_per_agent": 1,
 }
 
-EMBB_USERS = 4
-URLLC_USERS = 3
-BE_USERS = 3
+EMBB_USERS = 2 # Original = 4
+URLLC_USERS = 2 # Original = 3
+BE_USERS = 2 # Original = 3
 
 traffic_types = np.concatenate(
     (
@@ -67,21 +67,20 @@ slice_requirements_traffics = {
 model = "optimal"
 obs_space_mode = "partial"
 windows_size_obs = 1
-seed = 100 
-
-# Scenario creation
+seed = 100
 
 # Bit generator for generating the amount of packets in each step
 rng = np.random.default_rng(seed) if seed != -1 else np.random.default_rng()
 
-# Environment for the simulation
+# Setting up the simulation environment
 env = Basestation(
     bs_name="test/{}/ws_{}/{}/".format(
         model,
         windows_size_obs,
         obs_space_mode,
     ),
-    bandwidth=8e8, # Original = 1e8
+    number_ues=EMBB_USERS + URLLC_USERS + BE_USERS,
+    bandwidth=1e8, # Original = 1e8
     max_number_steps=test_param["steps_per_trial"],
     max_number_trials=test_param["total_trials"],
     traffic_types=traffic_types,
@@ -94,8 +93,9 @@ env = Basestation(
     save_hist=True,
     baseline=False,
 )
+env.reset(test_param["initial_trial"])
 
-# Inputting the simulation data in the model data classes
+# Putting the simulation config data into the model data classes
 
 data = ModelData(
     B=env.bandwidth,
@@ -126,7 +126,7 @@ for s in env.slices:
         slice.addUser(ue)
     data.addSlice(slice)
 
-def updateRequirements(env: Basestation, data: ModelData):
+def updateModelRequirements(env: Basestation, data: ModelData):
     for s in env.slice_requirements.keys():
         if s == "embb" or s == "urllc":
             data.slices[s].r_req = env.slice_requirements[s]["throughput"] * 1e3 * len(data.slices[s].users)
@@ -136,10 +136,12 @@ def updateRequirements(env: Basestation, data: ModelData):
             data.slices[s].g_req = env.slice_requirements[s]["long_term_pkt_thr"] * 1e3 * len(data.slices[s].users)
             data.slices[s].f_req = env.slice_requirements[s]["fifth_perc_pkt_thr"] * 1e3 * len(data.slices[s].users)
 
+# Executing the experiment
+
 print("\n############### Testing ###############")
 for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]), leave=False, desc="Trials"):
     for _ in tqdm(range(test_param["steps_per_trial"]),leave=False, desc="Steps"):
-        updateRequirements(env,data)
+        updateModelRequirements(env,data)
 
         # Updating model data before the simulation step
         for s in env.slices:    
@@ -148,25 +150,16 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
             slice_part = 0
             slice_buff = np.zeros(data.l_max+1)
             
-            # Get r, d, rcv, part, buff and sent for all users and sum to get the slice metric
-            # Change the UE class to getting all data right
-            
-            # Change UE step to calculate received packets and buffer calling the step to send them
             for u in s.ues:
                 d = u.dropped_pkts
                 rcv = u.pkt_received
                 part = u.partial_sent_pkts
                 buff = u.buffer_array
-
                 slice_d += d
                 slice_rcv += rcv
                 slice_part += part
                 slice_buff += buff
-            # print(s.name, "before step")
-            # print("slice d =",slice_d)
-            # print("slice rcv =",slice_rcv)
-            # print("slice part =",slice_part)
-            # print("slice buff =",slice_buff)
+            
             data.slices[s.name].updateHistBefStep(
                 d=slice_d,
                 rcv=slice_rcv,
@@ -174,11 +167,13 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
                 buff=slice_buff
             )
 
+        # Executing the optimization
         m, results = optimize(data=data, method="cplex", allocate_all_resources=False, verbose=False)
         if results.solver.termination_condition != "optimal":
-            print("\nStep",data.n,"unfeasible")
+            print("\nStep",data.n,"is unfeasible")
             exit()
         
+        # Executing the simulation step with the optimal RBG scheduling
         scheduling = [m.R_s["be"].value, m.R_s["embb"].value, m.R_s["urllc"].value]
         env.step(scheduling, action_already_integer=True)
 
@@ -186,16 +181,22 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
         for s in env.slices:
             slice_r = 0
             slice_sent = np.zeros(data.l_max+1)
+            
             for u in s.ues:
                 r = u.last_real_served_thr
                 sent = u.sent_array
-
                 slice_r += r
                 slice_sent += sent
-            # print(s.name, "after step")
-            # print("slice r =",slice_r)
-            # print("slice sent =",slice_sent)
+            
             data.slices[s.name].updateHistAftStep(
                     r=slice_r,
                     sent=slice_sent
                 )
+# Saving the model data
+path = ("./hist/modeldata/trial{}/").format(test_param["initial_trial"])
+try:
+    os.makedirs(path)
+except OSError:
+    pass
+
+np.savez_compressed(path + "modeldata", **data)

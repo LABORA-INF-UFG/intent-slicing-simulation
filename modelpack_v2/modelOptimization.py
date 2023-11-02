@@ -184,11 +184,11 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
         d_s_sup[s] = remain_s_i[s, data.l_max] + over_s[s]
 
         # EXP: p_s for rlp slices
-        p_s[s] = d_s_sup[s] + sum(data.slices[s].hist_d[data.n-data.w+1 : data.n+1]) / (
-            data.slices[s].hist_b_s[data.n-data.w+1] + data.slices[s].hist_rcv[data.n] 
-            + sum(data.slices[s].hist_rcv[data.n-data.w+2 : data.n+1])
-            )
-    
+        denominator = data.slices[s].hist_b_s[data.n-data.w+1] + data.slices[s].hist_rcv[data.n] + sum(data.slices[s].hist_rcv[data.n-data.w+2 : data.n+1])
+        if denominator > 0:
+            p_s[s] = d_s_sup[s] + sum(data.slices[s].hist_d[data.n-data.w+1 : data.n+1]) / denominator
+        else:
+            p_s[s] = 0*d_s_sup[s]
     # --------------- Expressions for fg slices
 
     g_s = dict()

@@ -183,7 +183,7 @@ class Basestation(gym.Env):
                 self.slices[i].save_hist()
 
         reward = self.calculate_reward()
-        self.update_hist(action_values, reward) # Adicionar o espaço de observação que salva o retorno do get_observational_space
+        self.update_hist(action_values, reward)
         if (self.step_number == self.max_number_steps - 1) and self.save_hist_bool:
             self.save_hist()
         self.step_number += 1

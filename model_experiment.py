@@ -69,7 +69,7 @@ EMBB_ID = 1
 URLLC_ID = 2
 BE_ID = 3
 
-TRIAL = 4 # Number of the trial used for generating data for this experiment
+TRIAL = 50 # Number of the trial used for generating data for this experiment
 
 # File location strings for UEs, slices and the trial scenario (basestation)
 ue_file_loc_base = "./hist/test/sac/ws_1/partial/trial{trial_num}/ues/aux_ue{ue_id}.npz"

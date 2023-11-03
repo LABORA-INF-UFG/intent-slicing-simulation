@@ -185,6 +185,7 @@ class Basestation(gym.Env):
         reward = self.calculate_reward()
         self.update_hist(action_values, reward)
         if (self.step_number == self.max_number_steps - 1) and self.save_hist_bool:
+        #if (self.step_number == 384) and self.save_hist_bool: # TODO: remove this, JUST FOR TESTING
             self.save_hist()
         self.step_number += 1
         if self.step_number % self.steps_update_traffics == 0:
@@ -229,10 +230,6 @@ class Basestation(gym.Env):
         }
 
         return (self.get_obs_space(), {})
-        #result = [np.array(self.get_obs_space()), [0]]
-        #result = np.array(result)
-        #result = np.concatenate(self.get_obs_space(), np.ndarray([0]))
-        #return result
 
     def render(self, mode="human"):
         pass
@@ -300,7 +297,7 @@ class Basestation(gym.Env):
                     slice_requirements,
                     (
                         self.slice_requirements[slice_req][attribute]
-                        / self.slice_req_norm_factors[normalization_idx] # Utilizar espaço sem normalização
+                        / self.slice_req_norm_factors[normalization_idx]
                     ),
                 )
                 normalization_idx += 1
@@ -545,13 +542,12 @@ class Basestation(gym.Env):
                 combinations.append(comb)
         return np.asarray(combinations)
 
-    def update_hist(self, action_rbs, reward): # cria vetor para salvar histórico
+    def update_hist(self, action_rbs, reward):
         """
         Update the hist values concerned to the basestation.
         """
         self.hist["actions"] = np.vstack((self.hist["actions"], action_rbs))
         self.hist["rewards"] = np.append(self.hist["rewards"], reward, axis=None)
-        # adicionar self.hist["obs"] ou outro nome
 
     def save_hist(self) -> None:
         """
@@ -712,7 +708,7 @@ class Basestation(gym.Env):
 
     @staticmethod
     def mbps_to_packets(packet_size, mbps):
-        return np.ceil(mbps * 1e3 / packet_size)
+        return np.floor(mbps * 1e3 / packet_size)
 
 
 def main():

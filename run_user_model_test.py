@@ -22,8 +22,8 @@ test_param = {
 }
 
 EMBB_USERS = 1 # Original = 4
-URLLC_USERS = 1 # Original = 3
-BE_USERS = 1 # Original = 3
+URLLC_USERS = 3 # Original = 3
+BE_USERS = 3 # Original = 3
 
 traffic_types = np.concatenate(
     (
@@ -36,14 +36,14 @@ traffic_types = np.concatenate(
 
 traffic_throughputs = {
     "light": {
-        "embb": 10, # Original = 15
+        "embb": 15, # Original = 15
         "urllc": 1, # Original = 1
-        "be": 5, # Original = 15
+        "be": 15, # Original = 15
     },
     "moderate": {
-        "embb": 20, # Original = 25
+        "embb": 25, # Original = 25
         "urllc": 5, # Original = 5
-        "be": 10, # Original = 25
+        "be": 25, # Original = 25
     },
 }
 slice_requirements_traffics = {
@@ -75,7 +75,7 @@ env = Basestation(
         obs_space_mode,
     ),
     number_ues=EMBB_USERS + URLLC_USERS + BE_USERS,
-    bandwidth=1e8, # Original = 1e8
+    bandwidth=2e8, # Original = 1e8
     total_number_rbs = 17*4, # Original = 17
     max_number_steps=test_param["steps_per_trial"],
     max_number_trials=test_param["total_trials"],
@@ -164,14 +164,18 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
             import time
             time.sleep(5)
             exit()
+
+        # Extracting the optimal RBG scheduling from the solution
+        be_resources = m.a_s["be"].value*data.n_ues_slice["be"]
+        embb_resources = m.a_s["embb"].value*data.n_ues_slice["embb"]
+        urllc_resources = m.a_s["urllc"].value*data.n_ues_slice["urllc"]
         
         # Executing the simulation step with the optimal RBG scheduling
-        scheduling = [m.R_s["be"].value, m.R_s["embb"].value, m.R_s["urllc"].value]
+        scheduling = [be_resources, embb_resources, urllc_resources]
         env.step(scheduling, action_already_integer=True)
 
         # Updating model data
         updateModelDataAftStep(env, data)
-
         data.advanceStep()
 
 # Saving the model data

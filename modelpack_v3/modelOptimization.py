@@ -98,10 +98,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
     # ----
 
     # VAR: R_s for all slices
-    m.R_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
+    #m.R_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
+
+    # VAR: a_s for all slices
+    m.a_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
 
     # VAR: R_u for all users
-    m.R_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
+    #m.R_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
 
     # VAR: k_u for all users
     m.k_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
@@ -162,19 +165,25 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
     # EXP: V_over the upper bound of any b_u_sup
     V_over = data.b_max + max(data.users[u].hist_rcv[data.n] for u in m.U)
 
-    # --------------- Expressions for all users
-    
-    r_u = dict()
-    for u in m.U:
-        # EXP: r_u calculation for all slices
-        r_u[u] = data.B * (m.R_u[u]/data.R) * data.users[u].SE[data.n] / 1e3
-    
+
     # --------------- Expressions for all slices
 
-    # r_s = dict()
-    # for s in m.S:
-    #     # EXP: r_s calculation for all slices
-    #     r_s[s] = sum(r_u[u] for u in U_s[s])
+    R_s = dict()
+    for s in m.S:
+        # EXP: R_s calculation for all slices
+        R_s[s] = m.a_s[s] * len(U_s[s])
+    
+    # --------------- Expressions for all users
+
+    R_u = dict()
+    r_u = dict()
+    for u in m.U:
+        s = data.users[u].s
+        # EXP: R_u calculation for all users
+        R_u[u] = R_s[s] / len(U_s[s])
+
+        # EXP: r_u calculation for all users
+        r_u[u] = data.B * (R_u[u]/data.R) * data.users[u].SE[data.n] / 1e3
 
     # --------------- Expressions for rlp users
     
@@ -216,7 +225,7 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
     # ------------------
 
     # OBJ: min sum R_s
-    m.OBJECTIVE = pyo.Objective(expr=sum(m.R_s[s] for s in m.S), sense=pyo.minimize)
+    m.OBJECTIVE = pyo.Objective(expr=sum(R_s[s] for s in m.S), sense=pyo.minimize)
 
 
     # -----------
@@ -227,34 +236,34 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
 
     # CONSTR: sum R_s = R
     if allocate_all_resources:
-        m.constr_R_s_sum = pyo.Constraint(expr=sum(m.R_s[s] for s in m.S) == data.R)
+        m.constr_R_s_sum = pyo.Constraint(expr=sum(R_s[s] for s in m.S) == data.R)
     else:
-        m.constr_R_s_sum = pyo.Constraint(expr=sum(m.R_s[s] for s in m.S) <= data.R)
+        m.constr_R_s_sum = pyo.Constraint(expr=sum(R_s[s] for s in m.S) <= data.R)
 
     # --------------- Constraints for all users and slices
     
-    m.constr_R_u_sum = pyo.ConstraintList()
-    m.constr_R_u_1 = pyo.ConstraintList()
-    m.constr_R_u_2 = pyo.ConstraintList()
+    # m.constr_R_u_sum = pyo.ConstraintList()
+    # m.constr_R_u_1 = pyo.ConstraintList()
+    # m.constr_R_u_2 = pyo.ConstraintList()
     
-    for s in m.S:
-        # CONSTR: sum R_u = R_s
-        m.constr_R_u_sum.add(
-            sum(m.R_u[u] for u in U_s[s]) == m.R_s[s]
-        )
+    # for s in m.S:
+    #     # CONSTR: sum R_u = R_s
+    #     m.constr_R_u_sum.add(
+    #         sum(m.R_u[u] for u in U_s[s]) == m.R_s[s]
+    #     )
 
-    for u in m.U:
-        s = data.users[u].s
+    # for u in m.U:
+    #     s = data.users[u].s
 
-        # CONSTR: R_u intra slice modeling 1
-        m.constr_R_u_1.add(
-            m.R_u[u] - m.R_s[s]/len(U_s[s]) <= 1 - data.e
-        )
+    #     # CONSTR: R_u intra slice modeling 1
+    #     m.constr_R_u_1.add(
+    #         m.R_u[u] - m.R_s[s]/len(U_s[s]) <= 1 - data.e
+    #     )
         
-        # CONSTR: R_u intra slice modeling 2
-        m.constr_R_u_2.add(
-            m.R_s[data.users[u].s]/len(U_s[s]) - m.R_u[u] <= 1 - data.e
-        )
+    #     # CONSTR: R_u intra slice modeling 2
+    #     m.constr_R_u_2.add(
+    #         m.R_s[data.users[u].s]/len(U_s[s]) - m.R_u[u] <= 1 - data.e
+    #     )
 
     # --------------- Constraints for fg users
     
@@ -447,13 +456,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
             m.constr_delta_u_i_le.add(
                 m.sent_u_i[u,i] - (V_sent + data.e) * m.delta_u_i[u,i] <= data.users[u].hist_buff[data.n][i] - data.e
             )
-        #'''
+        
         # CONSTR: Average Buffer Latency intent
         m.constr_l_u_intent.add(
             sum((data.users[u].hist_acc[data.n][i] + m.sent_u_i[u,i])*i for i in m.I)
             <= data.users[u].l_req * sum((data.users[u].hist_acc[data.n][i] + m.sent_u_i[u,i]) for i in m.I)
         )
-        #'''
+        
         # CONSTR: maxover_u >= b_u_sup
         m.constr_maxover_u_ge_b_u_sup.add(
             m.MAXover_u[u] >= b_u_sup[u]
@@ -473,12 +482,12 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
         m.constr_maxover_u_le_b_max.add(
             m.MAXover_u[u] <= data.b_max + V_over * m.beta_u[u]
         )
-        #'''
+        
         # CONSTR: Packet Loss Rate intent
         m.constr_p_u_intent.add(
             p_u[u] <= data.users[u].p_req
         )
-        #'''
+        
         
     # ----------
     # DUAL MODEL

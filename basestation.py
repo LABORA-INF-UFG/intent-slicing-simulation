@@ -271,6 +271,7 @@ class Basestation(gym.Env):
                     name=values[i - 1],
                     trial_number=self.trial_number,
                     ues=ues[indexes == (i - 1)],
+                    requirements = self.slice_requirements[values[i - 1]],
                     plots=self.slice_plots,
                     save_hist=self.save_hist_bool,
                     root_path=self.root_path,
@@ -510,6 +511,7 @@ class Basestation(gym.Env):
                     list(self.traffic_throughputs.keys())[traffic_level]
                 ][slice.name]
             )
+            slice.update_requirements(self.slice_requirements[slice.name])
 
             for ue in slice.ues:
                 ue.traffic_throughput = (
@@ -617,21 +619,37 @@ class Basestation(gym.Env):
             "Long term average thr. (Mbps)",
             "Fifth percentile throughput (Mbps)",
         ]
-        slices_name = ["BE", "eMBB", "URLLC"]
         for plot_number in range(len(filenames)):
             w, h = plt.figaspect(0.6)
             fig = plt.figure(figsize=(w, h))
             plt.xlabel(x_label, fontsize=14)
             plt.ylabel(y_labels[plot_number], fontsize=14)
             plt.grid()
-            for slice_id in range(1, max_slice_id + 1):
-                hist = Slice.read_hist(bs_name, trial_number, slice_id, root_path)[
+            for slice in self.slices:
+                hist = Slice.read_hist(bs_name, trial_number, slice.id, root_path)[
                     plot_number
                 ]
+                aux_hist = Slice.read_aux_hist(bs_name, trial_number, slice.id, root_path)
+                if slice.name == "embb" or slice.name == "urllc":
+                    if filenames[plot_number] == "pkt_thr_capacity":
+                        hist = hist/(aux_hist["throughput"] * 1e3)
+                    elif filenames[plot_number] == "avg_buffer_lat":
+                        hist = hist/aux_hist["latency"]
+                    elif filenames[plot_number] == "pkt_loss":
+                        hist = hist/aux_hist["pkt_loss"]
+                    else:
+                        continue
+                elif slice.name == "be":
+                    if filenames[plot_number] == "long_term_pkt_thr":
+                        hist = hist/(aux_hist["long_term_pkt_thr"] * 1e3)
+                    elif filenames[plot_number] == "fifth_perc_pkt_thr":
+                        hist = hist/(aux_hist["fifth_perc_pkt_thr"] * 1e3)
+                    else:
+                        continue
                 plt.plot(
                     range(0, len(hist), step),
                     hist[0::step],
-                    label="Slice {}".format(slices_name[slice_id - 1]),
+                    label="Slice {}".format(slice.name),
                 )
             fig.tight_layout()
             plt.legend(fontsize=12)

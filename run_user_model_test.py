@@ -87,7 +87,6 @@ env = Basestation(
     obs_space_mode=obs_space_mode,
     rng=rng,
     plots=True,
-    ue_plots=True,
     save_hist=True,
     baseline=False,
 )
@@ -101,7 +100,7 @@ data = ModelData(
     e=1e-6,
     b_max=env.max_packets_buffer,
     l_max=env.buffer_max_lat,
-    w_max=env.ues[0].windows_size # TODO try 20
+    w_max=env.ues[0].windows_size
 )
 for s in env.slices:
     data.addSlice(s.name)
@@ -171,8 +170,6 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
         if results.solver.termination_condition != "optimal":
             print("\nStep",data.n,"is unfeasible")
             env.save_hist()
-            import time
-            time.sleep(5)
             exit()
 
         # Extracting the optimal RBG scheduling from the solution

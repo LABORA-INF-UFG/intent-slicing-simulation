@@ -22,6 +22,7 @@ class Slice:
         name: str,
         trial_number: int,
         ues: list,
+        requirements: dict,
         plots: bool,
         save_hist: bool = False,
         root_path: str = ".",
@@ -31,6 +32,7 @@ class Slice:
         self.name = name
         self.trial_number = trial_number
         self.ues = ues
+        self.requirements = requirements
         self.plots = plots
         self.save_hist_bool = save_hist
         self.hist_labels = [
@@ -48,6 +50,17 @@ class Slice:
         self.no_windows_hist = {
             hist_label: np.array([]) for hist_label in self.hist_labels
         }
+
+        # Added for plotting more graphs
+        self.aux_hist_labels = [
+            "id", # Slice id
+            "name", # Slice name
+        ]
+        self.aux_hist_labels.extend(req for req in self.requirements.keys()) # To save requirements
+        self.aux_hist = {hist_label: np.array([]) for hist_label in self.aux_hist_labels}
+        self.aux_hist["id"] = self.id
+        self.aux_hist["name"] = self.name
+
         self.ues_order = []
         self.num_rbgs_assigned = 0
         self.rr_index = 0
@@ -64,6 +77,9 @@ class Slice:
         Assign the number of RBs specified by the base station to the slice.
         """
         self.num_rbgs_assigned = num_rbs
+
+    def update_requirements(self, requirements: dict) -> None:
+        self.requirements = requirements
 
     def update_hist(self, hist_ues: list, hist_nowindows_ues: list) -> None:
         """
@@ -101,6 +117,13 @@ class Slice:
             self.no_windows_hist[var[0]] = np.append(
                 self.no_windows_hist[var[0]], hist_nowindows_vars[i]
             )
+        
+        # Requirements
+        for req_label in self.requirements.keys():
+            if self.requirements[req_label] != 0:
+                self.aux_hist[req_label] = np.append(self.aux_hist[req_label], self.requirements[req_label])
+            else:
+                self.aux_hist[req_label] = np.append(self.aux_hist[req_label], -1)
 
     def get_last_no_windows_hist(self) -> dict:
         """
@@ -124,6 +147,7 @@ class Slice:
             pass
 
         np.savez_compressed((path + "slice{}").format(self.id), **self.no_windows_hist)
+        np.savez_compressed((path + "aux_slice{}").format(self.id), **self.aux_hist)
         if self.plots:
             Slice.plot_metrics(self.bs_name, self.trial_number, self.id, self.root_path)
 
@@ -151,6 +175,19 @@ class Slice:
                 data.f.fifth_perc_pkt_thr,
             ]
         )
+    
+    @staticmethod
+    def read_aux_hist(
+        bs_name: str, trial_number: int, slice_id: int, root_path: str = "."
+    ) -> None:
+        """
+        Read slice aux variables history from external file.
+        """
+        path = "{}/hist/{}/trial{}/slices/aux_slice{}.npz".format(
+            root_path, bs_name, trial_number, slice_id
+        )
+        data = np.load(path)
+        return data
 
     @staticmethod
     def plot_metrics(

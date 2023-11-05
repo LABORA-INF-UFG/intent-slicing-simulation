@@ -147,6 +147,15 @@ def updateModelDataAftStep(env: Basestation, data: ModelData):
     for s in env.slices:    
         data.slices[s.name].updateHistAftStep(data.n)
 
+# Extracts results from the optimization model and save them in the model data
+def saveResults(data: ModelData, m):
+    rrbs_per_slice = {
+        "embb": m.a_s["embb"].value * len(data.slices["embb"].users),
+        "be": m.a_s["be"].value * len(data.slices["be"].users),
+        "urllc" : m.a_s["urllc"].value * len(data.slices["urllc"].users)
+    }
+    
+    data.saveResults(rrbs_per_slice)
 
 # Executing the experiment
 print("\n############### Testing ###############")
@@ -166,10 +175,13 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
             exit()
 
         # Extracting the optimal RBG scheduling from the solution
-        be_resources = m.a_s["be"].value*data.n_ues_slice["be"]
-        embb_resources = m.a_s["embb"].value*data.n_ues_slice["embb"]
-        urllc_resources = m.a_s["urllc"].value*data.n_ues_slice["urllc"]
+        be_resources = m.a_s["be"].value * len(data.slices["embb"].users)
+        embb_resources = m.a_s["embb"].value * len(data.slices["be"].users)
+        urllc_resources = m.a_s["urllc"].value * len(data.slices["urllc"].users)
         
+        # Saving results
+        saveResults(data, m)
+
         # Executing the simulation step with the optimal RBG scheduling
         scheduling = [be_resources, embb_resources, urllc_resources]
         env.step(scheduling, action_already_integer=True)

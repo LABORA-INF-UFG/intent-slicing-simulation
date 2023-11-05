@@ -34,6 +34,13 @@ class UserData:
         self.hist_buff = np.ndarray((0,l_max+1)) # Historical buffer packets (list of list of packets)
         self.hist_sent = np.ndarray((0,l_max+1)) # Historical sent packets (list of list of packets)
         
+        # Historical requirements (may vary during the simulation)
+        self.hist_r_req = np.array([])
+        self.hist_l_req = np.array([])
+        self.hist_p_req = np.array([])
+        self.hist_g_req = np.array([])
+        self.hist_f_req = np.array([])
+
         # Initializing the accumulated sent packets of previous steps (list of list of packets)
         self.acc = np.zeros(l_max+1)
         self.hist_acc = np.ndarray((0,l_max+1))
@@ -44,6 +51,9 @@ class UserData:
 
         # Initializing the incremental window size
         self.w = 1 
+
+        # Historical window size (may vary during the simulation)
+        self.hist_w = np.array([])
     
     # Returns a sorted list of throughputs in a window that ends in step - 1
     def getSortedThroughputWindow (self, w, n):
@@ -85,7 +95,19 @@ class UserData:
         self.hist_part = np.append(self.hist_part, part)
         self.hist_buff = np.vstack([self.hist_buff, buff])
         self.hist_b = np.append(self.hist_b, rcv - buff[0] + sum(buff))
-        self.hist_acc = np.vstack([self.hist_acc, self.acc])    
+        self.hist_acc = np.vstack([self.hist_acc, self.acc])
+        self.hist_w = np.append(self.hist_w, self.w)
+        
+        if self.r_req is not None:
+            self.hist_r_req = np.append(self.hist_r_req, self.r_req)
+        if self.l_req is not None:
+            self.hist_l_req = np.append(self.hist_l_req, self.l_req)
+        if self.p_req is not None:
+            self.hist_p_req = np.append(self.hist_p_req, self.p_req)
+        if self.g_req is not None:
+            self.hist_g_req = np.append(self.hist_g_req, self.g_req)
+        if self.f_req is not None:
+            self.hist_f_req = np.append(self.hist_f_req, self.f_req)
     
     # Updates the slice data after the simulation step and model soving
     def updateHistAftStep(

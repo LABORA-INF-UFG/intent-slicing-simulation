@@ -1,6 +1,7 @@
 from .SliceData import SliceData
 from .UserData import UserData
 from pyomo import environ as pyo
+import numpy as np
 
 class ModelData:
     def __init__(
@@ -21,10 +22,12 @@ class ModelData:
         self.l_max = l_max
         self.w_max = w_max
         
-        # Initializing dictionaries for saving slices, users and the number of users per slice
+        # Initializing dictionaries for saving slices and users
         self.slices = dict()
         self.users = dict()
-        self.n_ues_slice = dict()
+
+        # Initializing variables for saving results
+        self.scheduling = dict()
 
         # Initializing the step number
         self.n = 0
@@ -37,6 +40,7 @@ class ModelData:
             id=id,
             l_max=self.l_max,
         )
+        self.scheduling[id] = np.array([])
     
     def addUser(
         self,
@@ -56,13 +60,18 @@ class ModelData:
     def associateUsersToSlices(self):
         for s in self.slices.values():
             s.disassociateUsers()
-            self.n_ues_slice[s.id] = 0
         for u in self.users.values():
             self.slices[u.s].addUser(u)
-            self.n_ues_slice[u.s] += 1
 
     def advanceStep(self):
         # Incrementing step and windows
         self.n += 1
         for u in self.users.values():
             u.incrementWindow()
+    
+    def saveResults(
+        self,
+        rrbs_per_slice: dict,
+        ):
+        for s in rrbs_per_slice.keys():
+            self.scheduling[s].append(rrbs_per_slice[s])

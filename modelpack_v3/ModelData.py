@@ -74,4 +74,4 @@ class ModelData:
         rrbs_per_slice: dict,
         ):
         for s in rrbs_per_slice.keys():
-            self.scheduling[s].append(rrbs_per_slice[s])
+            self.scheduling[s] = np.append(self.scheduling[s], rrbs_per_slice[s])

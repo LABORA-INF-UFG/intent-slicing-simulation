@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 from tqdm import tqdm
+import pickle
 
 from baselines import BaselineAgent
 from basestation import Basestation
@@ -192,10 +193,6 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
 
 # Saving the model data
 path = ("./hist/modeldata/trial{}/").format(test_param["initial_trial"])
-try:
-    os.makedirs(path)
-except OSError:
-    pass
-
-# TODO: create a results class that can be saved as npz
-np.savez_compressed(path + "modeldata", **data.__dict__)
+os.makedirs(path, exist_ok=True)
+with open(path+"modeldata.pickle", "wb") as model_data_file:
+    pickle.dump(data, model_data_file)

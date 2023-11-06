@@ -611,13 +611,13 @@ class Basestation(gym.Env):
         y_labels = [
             "Throughput received (Mbps)",
             "Uplink Throughput (Mbps)",
-            "Throughput Capacity (Mbps)",
+            "Throughput Ratio (%)",
             "Occupancy rate",
-            "Latency [ms]",
-            "Packet loss rate",
+            "Latency Ratio (%)",
+            "Packet Loss Ratio (%)",
             "Spectral efficiency (bits/s/Hz)",
-            "Long term average thr. (Mbps)",
-            "Fifth percentile throughput (Mbps)",
+            "Long-term Throughput Ratio (%)",
+            "Fifth-percentile Throughput Ratio (%)",
         ]
         for plot_number in range(len(filenames)):
             w, h = plt.figaspect(0.6)
@@ -629,23 +629,24 @@ class Basestation(gym.Env):
                 hist = Slice.read_hist(bs_name, trial_number, slice.id, root_path)[
                     plot_number
                 ]
-                aux_hist = Slice.read_aux_hist(bs_name, trial_number, slice.id, root_path)
-                if slice.name == "embb" or slice.name == "urllc":
-                    if filenames[plot_number] == "pkt_thr_capacity":
-                        hist = hist/(aux_hist["throughput"] * 1e3)
-                    elif filenames[plot_number] == "avg_buffer_lat":
-                        hist = hist/aux_hist["latency"]
-                    elif filenames[plot_number] == "pkt_loss":
-                        hist = hist/aux_hist["pkt_loss"]
-                    else:
-                        continue
-                elif slice.name == "be":
-                    if filenames[plot_number] == "long_term_pkt_thr":
-                        hist = hist/(aux_hist["long_term_pkt_thr"] * 1e3)
-                    elif filenames[plot_number] == "fifth_perc_pkt_thr":
-                        hist = hist/(aux_hist["fifth_perc_pkt_thr"] * 1e3)
-                    else:
-                        continue
+                if plot_number in [2,4,5,7,8]:
+                    aux_hist = Slice.read_aux_hist(bs_name, trial_number, slice.id, root_path)
+                    if slice.name == "embb" or slice.name == "urllc":
+                        if filenames[plot_number] == "pkt_thr_capacity":
+                            hist = 100 * hist/(aux_hist["throughput"] * 1e3)
+                        elif filenames[plot_number] == "avg_buffer_lat":
+                            hist = 100 * hist/aux_hist["latency"]
+                        elif filenames[plot_number] == "pkt_loss":
+                            hist = 100 * hist/aux_hist["pkt_loss"]
+                        else:
+                            continue
+                    elif slice.name == "be":
+                        if filenames[plot_number] == "long_term_pkt_thr":
+                            hist = 100 * hist/(aux_hist["long_term_pkt_thr"] * 1e3)
+                        elif filenames[plot_number] == "fifth_perc_pkt_thr":
+                            hist = 100 * hist/(aux_hist["fifth_perc_pkt_thr"] * 1e3)
+                        else:
+                            continue
                 plt.plot(
                     range(0, len(hist), step),
                     hist[0::step],
@@ -679,7 +680,7 @@ class Basestation(gym.Env):
         ]
         x_label = "Iteration [n]"
         y_labels = [
-            "# RBs",
+            "Resource Blocks Ratio (%)",
             "Reward",
         ]
         total = [
@@ -696,7 +697,7 @@ class Basestation(gym.Env):
                 plot_number
             ]
             hist = hist/total[plot_number]
-            if y_labels[plot_number] == "# RBs":
+            if y_labels[plot_number] == "Resource Blocks Ratio (%)":
                 for slice_id in range(0, max_slice_id):
                     plt.plot(
                         range(0, len(hist[slice_id]), step),

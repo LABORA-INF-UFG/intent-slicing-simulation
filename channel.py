@@ -44,10 +44,10 @@ class Channel:
     def get_serving_se(
         sir_path: str,
         rsrp_path: str,
-        no_fc: int,
-        no_UE: int,
-        no_cell: int,
-        no_samples: int,
+        no_fc: int, # Number of frequency carriers
+        no_UE: int, # Number of UEs
+        no_cell: int, # Number of cells
+        no_samples: int, # Number of samples
     ) -> np.array:
         """
         Calculate the spectral efficiency using Bjornson Massive MIMO Book EQ 7.1.

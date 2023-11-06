@@ -16,13 +16,13 @@ from modelpack_v3.modelOptimization import optimize
 # Setting up the experiment
 
 test_param = {
-    "steps_per_trial": 2000, #2000,
+    "steps_per_trial": 200, #2000,
     "total_trials": 50, #50,
     "initial_trial": 50, #46,
     "runs_per_agent": 1,
 }
 
-EMBB_USERS = 1 # Original = 4
+EMBB_USERS = 4 # Original = 4
 URLLC_USERS = 3 # Original = 3
 BE_USERS = 3 # Original = 3
 
@@ -59,6 +59,18 @@ slice_requirements_traffics = {
         "be": {"long_term_pkt_thr": 10, "fifth_perc_pkt_thr": 5},
     },
 }
+# slice_requirements_traffics = {
+#     "light": {
+#         "embb": {"throughput": 10, "latency": 50, "pkt_loss": 0.5},
+#         "urllc": {"throughput": 1, "latency": 1, "pkt_loss": 1e-5},
+#         "be": {"long_term_pkt_thr": 5, "fifth_perc_pkt_thr": 2},
+#     },
+#     "moderate": {
+#         "embb": {"throughput": 20, "latency": 50, "pkt_loss": 0.5},
+#         "urllc": {"throughput": 5, "latency": 1, "pkt_loss": 1e-5},
+#         "be": {"long_term_pkt_thr": 10, "fifth_perc_pkt_thr": 5},
+#     },
+# }
 
 model = "optimal"
 obs_space_mode = "partial"
@@ -76,8 +88,8 @@ env = Basestation(
         obs_space_mode,
     ),
     number_ues=EMBB_USERS + URLLC_USERS + BE_USERS,
-    bandwidth=2e8, # Original = 1e8
-    total_number_rbs = 17*4, # Original = 17
+    bandwidth=1e8, # Original = 1e8
+    total_number_rbs = 100, # Original = 17
     max_number_steps=test_param["steps_per_trial"],
     max_number_trials=test_param["total_trials"],
     traffic_types=traffic_types,
@@ -150,12 +162,25 @@ def updateModelDataAftStep(env: Basestation, data: ModelData):
 # Extracts results from the optimization model and save them in the model data
 def saveResults(data: ModelData, m):
     rrbs_per_slice = {
-        "embb": m.a_s["embb"].value * len(data.slices["embb"].users),
-        "be": m.a_s["be"].value * len(data.slices["be"].users),
-        "urllc" : m.a_s["urllc"].value * len(data.slices["urllc"].users)
+        # "embb": m.a_s["embb"].value * len(data.slices["embb"].users),
+        # "be": m.a_s["be"].value * len(data.slices["be"].users),
+        # "urllc" : m.a_s["urllc"].value * len(data.slices["urllc"].users)
+        "embb": m.R_s["embb"].value,
+        "be": m.R_s["be"].value,
+        "urllc" : m.R_s["urllc"].value
     }
     
     data.saveResults(rrbs_per_slice)
+
+# Updates the Round-Robin prioritization for UEs in a slice
+# The first element is the prior UE index
+def updateRRPrioritization(env: Basestation, data: ModelData):
+    for s in env.slices:
+        prior = np.arange(len(s.ues))[::-1] # Start prioritizing higher indexes
+        prior = np.roll(prior, s.rr_index)
+        for i in range(len(prior)):
+            prior[i] = list(data.slices[s.name].users.keys())[prior[i]]
+        data.slices[s.name].rr_prioritization = prior
 
 # Executing the experiment
 print("\n############### Testing ###############")
@@ -163,6 +188,7 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
     for _ in tqdm(range(test_param["steps_per_trial"]),leave=False, desc="Steps"):
         # Updating model data
         updateModelRequirements(env, data)
+        updateRRPrioritization(env, data)
         updateModelDataBefStep(env, data)
 
         # Executing the optimization
@@ -173,9 +199,12 @@ for _ in tqdm(range(test_param["total_trials"] + 1 - test_param["initial_trial"]
             exit()
 
         # Extracting the optimal RBG scheduling from the solution
-        be_resources = m.a_s["be"].value * len(data.slices["embb"].users)
-        embb_resources = m.a_s["embb"].value * len(data.slices["be"].users)
-        urllc_resources = m.a_s["urllc"].value * len(data.slices["urllc"].users)
+        # be_resources = m.a_s["be"].value * len(data.slices["embb"].users)
+        # embb_resources = m.a_s["embb"].value * len(data.slices["be"].users)
+        # urllc_resources = m.a_s["urllc"].value * len(data.slices["urllc"].users)
+        be_resources = m.R_s["be"].value
+        embb_resources = m.R_s["embb"].value
+        urllc_resources = m.R_s["urllc"].value
         
         # Saving results
         saveResults(data, m)

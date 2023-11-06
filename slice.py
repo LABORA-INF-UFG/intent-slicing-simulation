@@ -123,7 +123,7 @@ class Slice:
             if self.requirements[req_label] != 0:
                 self.aux_hist[req_label] = np.append(self.aux_hist[req_label], self.requirements[req_label])
             else:
-                self.aux_hist[req_label] = np.append(self.aux_hist[req_label], -1)
+                self.aux_hist[req_label] = np.append(self.aux_hist[req_label], 0) #-1)
 
     def get_last_no_windows_hist(self) -> dict:
         """
@@ -250,9 +250,10 @@ class Slice:
         station to the UEs following a round robin algorithm.
         """
         # Consider a round-robin allocation among UEs
+        # Priotizing UEs with higher ids first, then cycling through all
         rbs_ues = np.zeros(len(self.ues))
         pool = cycle(np.arange(len(rbs_ues))[::-1])
-        for i in np.arange(num_rbs_allocated):
+        for i in np.arange(num_rbs_allocated): 
             rbs_ues[next(pool)] += 1
 
         rbs_ues = np.roll(rbs_ues, self.rr_index)

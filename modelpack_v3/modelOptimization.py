@@ -98,13 +98,13 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
     # ----
 
     # VAR: R_s for all slices
-    #m.R_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
+    m.R_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
 
     # VAR: a_s for all slices
-    m.a_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
+    #m.a_s = pyo.Var(m.S, domain=pyo.NonNegativeIntegers)
 
     # VAR: R_u for all users
-    #m.R_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
+    m.R_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
 
     # VAR: k_u for all users
     m.k_u = pyo.Var(m.U, domain=pyo.NonNegativeIntegers)
@@ -168,22 +168,23 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
 
     # --------------- Expressions for all slices
 
-    R_s = dict()
-    for s in m.S:
-        # EXP: R_s calculation for all slices
-        R_s[s] = m.a_s[s] * len(U_s[s])
+    # R_s = dict()
+    # for s in m.S:
+    #     # EXP: R_s calculation for all slices
+    #     R_s[s] = m.a_s[s] * len(U_s[s])
     
     # --------------- Expressions for all users
 
-    R_u = dict()
+    #R_u = dict()
     r_u = dict()
     for u in m.U:
         s = data.users[u].s
         # EXP: R_u calculation for all users
-        R_u[u] = R_s[s] / len(U_s[s])
+        #R_u[u] = R_s[s] / len(U_s[s])
 
         # EXP: r_u calculation for all users
-        r_u[u] = data.B * (R_u[u]/data.R) * data.users[u].SE[data.n] / 1e3
+        #r_u[u] = data.B * (R_u[u]/data.R) * data.users[u].SE[data.n] / 1e3
+        r_u[u] = data.B * (m.R_u[u]/data.R) * data.users[u].SE[data.n] / 1e3
 
     # --------------- Expressions for rlp users
     
@@ -225,7 +226,8 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
     # ------------------
 
     # OBJ: min sum R_s
-    m.OBJECTIVE = pyo.Objective(expr=sum(R_s[s] for s in m.S), sense=pyo.minimize)
+    #m.OBJECTIVE = pyo.Objective(expr=sum(R_s[s] for s in m.S), sense=pyo.minimize)
+    m.OBJECTIVE = pyo.Objective(expr=sum(m.R_s[s] for s in m.S), sense=pyo.minimize)
 
 
     # -----------
@@ -236,34 +238,47 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
 
     # CONSTR: sum R_s = R
     if allocate_all_resources:
-        m.constr_R_s_sum = pyo.Constraint(expr=sum(R_s[s] for s in m.S) == data.R)
+        #m.constr_R_s_sum = pyo.Constraint(expr=sum(R_s[s] for s in m.S) == data.R)
+        m.constr_R_s_sum = pyo.Constraint(expr=sum(m.R_s[s] for s in m.S) == data.R)
     else:
-        m.constr_R_s_sum = pyo.Constraint(expr=sum(R_s[s] for s in m.S) <= data.R)
+        #m.constr_R_s_sum = pyo.Constraint(expr=sum(R_s[s] for s in m.S) <= data.R)
+        m.constr_R_s_sum = pyo.Constraint(expr=sum(m.R_s[s] for s in m.S) <= data.R)
 
-    # --------------- Constraints for all users and slices
+    # --------------- Constraints for all slices
     
-    # m.constr_R_u_sum = pyo.ConstraintList()
-    # m.constr_R_u_1 = pyo.ConstraintList()
-    # m.constr_R_u_2 = pyo.ConstraintList()
-    
-    # for s in m.S:
-    #     # CONSTR: sum R_u = R_s
-    #     m.constr_R_u_sum.add(
-    #         sum(m.R_u[u] for u in U_s[s]) == m.R_s[s]
-    #     )
+    m.constr_R_u_sum = pyo.ConstraintList()
+    m.constr_R_u_prioritization = pyo.ConstraintList()
+    for s in m.S:
+        # CONSTR: sum R_u = R_s
+        m.constr_R_u_sum.add(
+            sum(m.R_u[u] for u in U_s[s]) == m.R_s[s]
+        )
 
-    # for u in m.U:
-    #     s = data.users[u].s
-
-    #     # CONSTR: R_u intra slice modeling 1
-    #     m.constr_R_u_1.add(
-    #         m.R_u[u] - m.R_s[s]/len(U_s[s]) <= 1 - data.e
-    #     )
+        ue_indexes = data.slices[s].users.keys()
+        prior = data.slices[s].rr_prioritization
         
-    #     # CONSTR: R_u intra slice modeling 2
-    #     m.constr_R_u_2.add(
-    #         m.R_s[data.users[u].s]/len(U_s[s]) - m.R_u[u] <= 1 - data.e
-    #     )
+        for i in range (len(prior)-1):
+            # CONSTR: R_u prioritization
+            m.constr_R_u_prioritization.add(
+                m.R_u[prior[i]] - m.R_u[prior[i+1]] >= 0
+            )
+    
+    # --------------- Constraints for all users
+    
+    m.constr_R_u_1 = pyo.ConstraintList()
+    m.constr_R_u_2 = pyo.ConstraintList()
+    for u in m.U:
+        s = data.users[u].s
+
+        # CONSTR: R_u intra slice modeling upper bound
+        m.constr_R_u_1.add(
+            m.R_u[u] - m.R_s[s]/len(U_s[s]) <= 1 - data.e
+        )
+        
+        # CONSTR: R_u intra slice modeling lower bound
+        m.constr_R_u_2.add(
+            m.R_s[data.users[u].s]/len(U_s[s]) - m.R_u[u] <= 1 - data.e
+        )
 
     # --------------- Constraints for fg users
     
@@ -283,18 +298,23 @@ def optimize(data: ModelData, method: str, allocate_all_resources = True, verbos
         s = data.users[u].s
         
         # CONSTR: Long-term Throughput intent
-        m.constr_g_u_intent.add(
-            g_u[u] >= data.users[u].g_req
-        )
+        if data.users[u].w == 1:
+            m.constr_g_u_intent.add(
+                r_u[u] >= data.users[u].g_req
+            )
+        else:
+            m.constr_g_u_intent.add(
+                g_u[u] >= data.users[u].g_req
+            )
         
         # Fifth-percentile constraints
-        if data.n == 0:
-            # CONSTR: Fifth-percentile intent for n = 0
+        if data.users[u].w == 1:
+            # CONSTR: Fifth-percentile intent for w = 1
             m.constr_f_u_intent.add(
                 r_u[u] >= data.users[u].f_req
             )    
         elif data.users[u].w < 20:
-            sort_h = data.users[u].hist_r[0]
+            sort_h = data.users[u].getSortedThroughputWindow(data.users[u].w, data.n)[0]
             
             # CONSTR: Psi upper bound
             m.constr_psi_u_le.add(

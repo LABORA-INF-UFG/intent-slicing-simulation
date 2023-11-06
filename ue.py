@@ -46,7 +46,7 @@ class UE:
         self.frequency = frequency
         self.total_number_rbs = total_number_rbs
         self.root_path = root_path
-        self.se = Channel.read_se_file(
+        self.se = 3 * Channel.read_se_file(
             "{}/se/trial{}_f{}_ue{}.npy", trial_number, frequency, id, self.root_path
         )
         self.buffer_max_lat = buffer_max_lat

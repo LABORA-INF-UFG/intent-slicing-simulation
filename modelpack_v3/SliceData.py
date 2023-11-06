@@ -32,6 +32,9 @@ class SliceData:
         self.acc = np.zeros(l_max+1)
         self.hist_acc = np.ndarray((0,l_max+1))
 
+        # The round robin prioritization of ues in the slice
+        self.rr_prioritization = []
+
     # Associates user with the slice
     def addUser (self, u: UserData) -> None:
         self.users[u.id] = u

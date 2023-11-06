@@ -63,9 +63,7 @@ class UserData:
     def incrementWindow(self):
         if self.w < self.w_max:
             self.w += 1
-        # If the slice is deactived, we reset the window size to 1
-        if self.s == "be" and self.g_req == 0 and self.f_req == 0:
-            self.w = 1
+        
             
     # Updates user requirements
     def updateRequirements(
@@ -81,6 +79,12 @@ class UserData:
         self.p_req = p_req
         self.f_req = f_req
         self.g_req = g_req
+
+        # We restart the window everytime the requirements change
+        if self.s == "be" and len(self.hist_g_req) > 0 and (self.g_req != self.hist_g_req[-1] or self.f_req != self.hist_f_req[-1]):
+            self.w = 1
+        if (self.s == "embb" or self.s == "urllc") and len(self.hist_r_req) > 0 and (self.r_req != self.hist_r_req[-1]):
+            self.w = 1
 
     # Updates the slice data before the simulation step and model soving
     def updateHistBefStep(

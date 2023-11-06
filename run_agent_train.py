@@ -201,6 +201,8 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                     windows_size_obs,
                     obs_space_mode,
                 ),
+                bandwidth=1e8, # Original = 1e8
+                total_number_rbs = 100, # Original = 17
                 max_number_steps=train_param["steps_per_trial"],
                 max_number_trials=train_param["total_trials"],
                 traffic_types=traffic_types,

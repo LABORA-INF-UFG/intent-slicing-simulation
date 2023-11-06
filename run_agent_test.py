@@ -20,9 +20,9 @@ test_param = {
 }
 
 # Create environment
-EMBB_USERS = 2 # Original = 4
-URLLC_USERS = 2 # Original = 3
-BE_USERS = 2 # Original = 3
+EMBB_USERS = 4 # Original = 4
+URLLC_USERS = 3 # Original = 3
+BE_USERS = 3 # Original = 3
 
 traffic_types = np.concatenate(
     (
@@ -187,6 +187,8 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                     windows_size_obs,
                     obs_space_mode,
                 ),
+                bandwidth=1e8, # Original = 1e8
+                total_number_rbs = 100, # Original = 17
                 number_ues=EMBB_USERS + URLLC_USERS + BE_USERS,
                 max_number_steps=test_param["steps_per_trial"],
                 max_number_trials=test_param["total_trials"],
@@ -198,7 +200,7 @@ for windows_size_obs in tqdm(windows_sizes, desc="Windows size", leave=False):
                 rng=rng,
                 plots=True,
                 save_hist=True,
-                baseline=False if model in models else True,
+                baseline=False,
             )
 
             if model in models:
